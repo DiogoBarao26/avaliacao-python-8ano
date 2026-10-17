@@ -1,0 +1,16 @@
+.env
+backend/.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+data/*.sqlite3
+data/*.sqlite3-shm
+data/*.sqlite3-wal
+data/*.xlsx
+data/*.tmp.xlsx
+data/secret_key.txt
+data/*.log
+.DS_Store
+Thumbs.db
