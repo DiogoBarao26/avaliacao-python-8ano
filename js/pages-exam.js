@@ -775,7 +775,19 @@ const PagesExam = (() => {
   }
 
   function readRecord() {
-    try { return JSON.parse(sessionStorage.getItem(STORAGE) || "null"); } catch (_error) { return null; }
+    let record = null;
+    try { record = JSON.parse(sessionStorage.getItem(STORAGE) || "null"); } catch (_error) { record = null; }
+    if (!record) return null;
+    const answered = Object.keys(record.answers || {}).length;
+    if (record.status === "concluida" && record.encerramento !== "seguranca" && answered < TOTAL) {
+      sessionStorage.removeItem(STORAGE);
+      return null;
+    }
+    return record;
+  }
+  function matches(session) {
+    const record = readRecord();
+    return Boolean(session && record && record.token === session.token && record.attemptId === session.attemptId);
   }
   function writeRecord(record) { sessionStorage.setItem(STORAGE, JSON.stringify(record)); }
   function progressOf(record) {
@@ -968,5 +980,5 @@ const PagesExam = (() => {
     fail("Não foi possível concluir a operação.", 404);
   }
 
-  return { handle, grade, execute };
+  return { handle, grade, execute, matches };
 })();

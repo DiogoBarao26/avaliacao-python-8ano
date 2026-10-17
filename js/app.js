@@ -600,6 +600,10 @@
   });
 
   state.session = readSession();
+  if (usesPages() && state.session && state.session.attemptId && !PagesExam.matches(state.session)) {
+    sessionStorage.removeItem(storageKey);
+    state.session = null;
+  }
   if (state.session && state.session.attemptId) {
     loadState(true);
   } else {
