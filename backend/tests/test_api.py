@@ -260,3 +260,20 @@ def test_resume_keeps_the_same_attempt(client):
     assert state.get_json()["progress"]["erros"] == 1
     foreign = start_exam(client, nome="Eva Martins", turma="8A", browser=browser, token=secrets.token_hex(32))[0]
     assert foreign.status_code == 409
+
+
+def test_security_closure_is_written_to_the_spreadsheet(client, app, sent_messages):
+    response, _browser, token = start_exam(client, nome="Caio Mendes", turma="8C")
+    headers = auth_headers(response.get_json()["attempt_id"], token)
+    denied = client.post("/api/finish", headers=headers)
+    assert denied.status_code == 409
+    closed = client.post("/api/finish", headers=headers, json={"encerramento": "seguranca"})
+    assert closed.status_code == 200
+    result = closed.get_json()["result"]
+    assert result["acertos"] == 0
+    assert "capturar a tela" in result["mensagem"]
+    assert result["encerramento"] == "Prova encerrada por tentativa de burlar a segurança"
+    sheet = load_workbook(Path(app.config["DATA_DIR"]) / "notas_8C.xlsx").active
+    assert sheet["B2"].value == "Caio Mendes"
+    assert sheet["K2"].value == "Prova encerrada por tentativa de burlar a segurança"
+    assert "burlar a segurança" in sent_messages[0].get_content()

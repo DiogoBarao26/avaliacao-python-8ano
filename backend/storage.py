@@ -61,7 +61,8 @@ class Store:
                     email_sent INTEGER NOT NULL DEFAULT 0,
                     email_claimed INTEGER NOT NULL DEFAULT 0,
                     email_error TEXT,
-                    resume_count INTEGER NOT NULL DEFAULT 0
+                    resume_count INTEGER NOT NULL DEFAULT 0,
+                    encerramento TEXT NOT NULL DEFAULT 'normal'
                 );
                 CREATE TABLE IF NOT EXISTS answers (
                     attempt_id TEXT NOT NULL,
@@ -76,6 +77,11 @@ class Store:
                     ON attempts(turma, status, finished_at);
                 """
             )
+            columns = {item[1] for item in conn.execute("PRAGMA table_info(attempts)")}
+            if "encerramento" not in columns:
+                conn.execute(
+                    "ALTER TABLE attempts ADD COLUMN encerramento TEXT NOT NULL DEFAULT 'normal'"
+                )
 
     def _connect(self) -> sqlite3.Connection:
         conn = sqlite3.connect(
@@ -248,7 +254,7 @@ class Store:
                     raise
         return {"conflict": False, "ready_to_finish": False, "row": self.get_attempt(attempt_id)}
 
-    def finish(self, attempt_id: str) -> dict:
+    def finish(self, attempt_id: str, security: bool = False) -> dict:
         with self._lock:
             with self._session() as conn:
                 conn.execute("BEGIN IMMEDIATE")
@@ -270,19 +276,21 @@ class Store:
                         """,
                         (attempt_id,),
                     ).fetchone()
-                    if count["total"] != 10 or row["current_question"] != 10 or row["phase"] != "feedback":
+                    if not security and (count["total"] != 10 or row["current_question"] != 10 or row["phase"] != "feedback"):
                         conn.execute("ROLLBACK")
                         return {"conflict": True, "reason": "Ainda existem questões sem confirmação."}
                     acertos = int(count["acertos"])
                     erros = 10 - acertos
                     finished = now_iso()
+                    encerramento = "seguranca" if security else "normal"
                     conn.execute(
                         """
                         UPDATE attempts
-                        SET status = 'concluida', saved = 1, finished_at = ?, acertos = ?, erros = ?
+                        SET status = 'concluida', saved = 1, finished_at = ?, acertos = ?, erros = ?,
+                            encerramento = ?
                         WHERE attempt_id = ? AND status = 'em_andamento'
                         """,
-                        (finished, acertos, erros, attempt_id),
+                        (finished, acertos, erros, encerramento, attempt_id),
                     )
                     conn.execute("COMMIT")
                 except Exception:

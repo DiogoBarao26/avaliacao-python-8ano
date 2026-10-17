@@ -12,7 +12,10 @@
     result: null,
     error: "",
     info: "",
-    sending: false
+    sending: false,
+    violations: 0,
+    closing: false,
+    closure: ""
   };
 
   function defaultProgress() {
@@ -224,9 +227,13 @@
         }
         if (data.resumed) {
           state.info = "Sua avaliação já estava em andamento. Você continuará da questão atual, sem alterar nome ou turma.";
+          readViolations();
           await loadState(false);
           return;
         }
+        state.violations = 0;
+        state.closure = "";
+        saveViolations();
         state.screen = "instructions";
         render();
       } catch (error) {
@@ -250,6 +257,7 @@
           <li>Você responde uma questão por vez e não pode voltar.</li>
           <li>Depois de confirmar, a resposta fica bloqueada.</li>
           <li>Nas questões 9 e 10, escreva o código no editor. A correção verifica o comportamento do programa, não apenas o texto.</li>
+          <li>Ctrl+C, Ctrl+V e o print da tela são bloqueados. Cada tentativa gera um alerta. Se isso passar de 3 vezes, a prova encerra e o professor vê o aviso na planilha.</li>
         </ul>
         <p><strong>Início registrado:</strong> ${escapeHtml(state.student.started_at)}</p>
         <p><strong>Aluno:</strong> ${escapeHtml(state.student.nome)} · Turma ${escapeHtml(state.student.turma)}</p>
@@ -342,7 +350,7 @@
     state.error = "";
     try {
       if (state.progress.question === 10) {
-        const data = await api("/api/finish", { method: "POST", body: {} });
+        const data = await api("/api/finish", { method: "POST", body: finishBody() });
         state.result = data.result;
         state.error = data.salvo ? "" : "A lista do professor ainda não confirmou esta nota.";
         state.screen = "result";
@@ -352,7 +360,7 @@
       }
       const data = await api("/api/next", { method: "POST", body: {} });
       if (data.ready_to_finish) {
-        const finished = await api("/api/finish", { method: "POST", body: {} });
+        const finished = await api("/api/finish", { method: "POST", body: finishBody() });
         state.result = finished.result;
         state.error = finished.salvo ? "" : "A lista do professor ainda não confirmou esta nota.";
         state.screen = "result";
@@ -405,7 +413,7 @@
       retry.addEventListener("click", async () => {
         retry.disabled = true;
         try {
-          const data = await api("/api/finish", { method: "POST", body: {} });
+          const data = await api("/api/finish", { method: "POST", body: finishBody() });
           state.result = data.result;
           state.error = data.salvo ? "" : "A lista do professor ainda não confirmou esta nota.";
         } catch (error) {
@@ -417,6 +425,7 @@
   }
 
   async function loadState(countResume) {
+    readViolations();
     try {
       const data = await api("/api/state" + (countResume ? "?count_resume=1" : ""));
       state.student = data.student;
@@ -446,19 +455,142 @@
     }
   }
 
+  function violationStorageKey() {
+    return "jbs_violations";
+  }
+
+  function readViolations() {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(violationStorageKey()) || "null");
+      if (saved && state.session && saved.attemptId === state.session.attemptId) {
+        state.violations = Number(saved.count) || 0;
+        return;
+      }
+    } catch (_error) {
+      /* contagem nova */
+    }
+    state.violations = 0;
+  }
+
+  function saveViolations() {
+    if (!state.session || !state.session.attemptId) return;
+    sessionStorage.setItem(violationStorageKey(), JSON.stringify({
+      attemptId: state.session.attemptId,
+      count: state.violations
+    }));
+  }
+
+  function finishBody() {
+    return state.closure === "seguranca" ? { encerramento: "seguranca" } : {};
+  }
+
+  function clearClipboard() {
+    const wipe = () => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText("").catch(() => {});
+      }
+    };
+    wipe();
+    window.setTimeout(wipe, 300);
+  }
+
+  let lastViolationAt = 0;
+
+  function reportViolation(kind) {
+    if (state.closing || state.screen === "result" || state.screen === "identify") return;
+    if (!document.body.classList.contains("exam-lock")) return;
+    const now = Date.now();
+    if (now - lastViolationAt < 700) return;
+    lastViolationAt = now;
+    state.violations += 1;
+    saveViolations();
+    if (state.violations > 3) {
+      state.closing = true;
+      window.alert("A avaliação será encerrada. Houve mais de 3 tentativas de copiar, colar ou capturar a tela. O professor será avisado na planilha.");
+      closeForSecurity();
+      return;
+    }
+    const action = kind === "print" ? "capturar a tela (print)" : kind === "copy" ? "usar Ctrl+C" : "usar Ctrl+V";
+    window.alert(`Não é permitido ${action} durante a avaliação. Tentativa ${state.violations} de 3. Se isso passar de 3 vezes, a prova será encerrada e o professor será avisado na planilha.`);
+  }
+
+  async function closeForSecurity() {
+    state.closing = true;
+    state.closure = "seguranca";
+    setLock(false);
+    try {
+      const data = await api("/api/finish", { method: "POST", body: finishBody() });
+      state.result = data.result;
+      state.error = data.salvo ? "" : "A lista do professor ainda não confirmou esta nota.";
+    } catch (error) {
+      const acertos = state.progress ? state.progress.acertos : 0;
+      state.error = error.message;
+      state.result = {
+        nome: state.student ? state.student.nome : "",
+        turma: state.student ? state.student.turma : "",
+        started_at: state.student ? state.student.started_at : "",
+        finished_at: "",
+        acertos,
+        erros: 10 - acertos,
+        nota_formatada: `${acertos},0`,
+        aproveitamento: acertos * 10,
+        mensagem: "A avaliação foi encerrada porque houve mais de 3 tentativas de copiar, colar ou capturar a tela.",
+        registro: "Não foi possível avisar o professor agora. Use Tentar salvar novamente.",
+        encerramento: "Prova encerrada por tentativa de burlar a segurança",
+        salvo: false,
+        revisao: []
+      };
+    }
+    state.screen = "result";
+    state.sending = false;
+    render();
+  }
+
+  function isPrintAttempt(event) {
+    const key = String(event.key || "");
+    const lower = key.toLowerCase();
+    return key === "PrintScreen" || event.code === "PrintScreen" || lower === "printscreen"
+      || ((event.metaKey || event.ctrlKey) && event.shiftKey && lower === "s")
+      || ((event.ctrlKey || event.metaKey) && lower === "p");
+  }
+
   document.addEventListener("contextmenu", (event) => {
     if (document.body.classList.contains("exam-lock")) event.preventDefault();
   });
   ["copy", "cut", "paste", "dragstart"].forEach((name) => {
     document.addEventListener(name, (event) => {
-      if (document.body.classList.contains("exam-lock")) event.preventDefault();
+      if (!document.body.classList.contains("exam-lock")) return;
+      event.preventDefault();
+      if (name === "copy") reportViolation("copy");
+      if (name === "paste") reportViolation("paste");
     });
   });
   document.addEventListener("keydown", (event) => {
-    if (!document.body.classList.contains("exam-lock")) return;
-    const key = event.key.toLowerCase();
-    const blocked = (event.ctrlKey || event.metaKey) && ["a", "c", "x", "v"].includes(key);
-    if (blocked || event.key === "Insert" && event.shiftKey) event.preventDefault();
+    if (!document.body.classList.contains("exam-lock") || state.closing) return;
+    const key = String(event.key || "").toLowerCase();
+    const print = isPrintAttempt(event);
+    const copy = (event.ctrlKey || event.metaKey) && key === "c";
+    const paste = ((event.ctrlKey || event.metaKey) && key === "v") || (event.shiftKey && event.key === "Insert");
+    const other = (event.ctrlKey || event.metaKey) && ["a", "x"].includes(key);
+    if (print || copy || paste || other) event.preventDefault();
+    if (event.repeat) return;
+    if (print) {
+      clearClipboard();
+      reportViolation("print");
+    } else if (copy) reportViolation("copy");
+    else if (paste) reportViolation("paste");
+  });
+  document.addEventListener("keyup", (event) => {
+    if (!document.body.classList.contains("exam-lock") || state.closing) return;
+    if (event.key !== "PrintScreen" && event.code !== "PrintScreen") return;
+    event.preventDefault();
+    clearClipboard();
+    reportViolation("print");
+  });
+  window.addEventListener("beforeprint", (event) => {
+    if (!document.body.classList.contains("exam-lock") || state.closing) return;
+    event.preventDefault();
+    reportViolation("print");
   });
   window.addEventListener("beforeunload", (event) => {
     if (document.body.classList.contains("exam-lock")) {

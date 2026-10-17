@@ -22,7 +22,14 @@ HEADERS = [
     "Nota final",
     "Aproveitamento (%)",
     "Situação do salvamento",
+    "Encerramento",
 ]
+
+
+def encerramento_texto(row: dict) -> str:
+    if row.get("encerramento") == "seguranca":
+        return "Prova encerrada por tentativa de burlar a segurança"
+    return "Concluída pelo aluno"
 
 
 def situacao(row: dict) -> str:
@@ -82,6 +89,7 @@ def write_workbook(path: Path, rows: list[dict]) -> None:
                 float(acertos),
                 float(acertos * 10),
                 situacao(row),
+                encerramento_texto(row),
             ]
         )
     for data_row in sheet.iter_rows(min_row=2):
@@ -90,10 +98,10 @@ def write_workbook(path: Path, rows: list[dict]) -> None:
             cell.alignment = Alignment(vertical="center")
         data_row[7].number_format = "0.0"
         data_row[8].number_format = "0.0"
-    widths = [40, 36, 12, 20, 20, 12, 12, 14, 22, 36]
+    widths = [40, 36, 12, 20, 20, 12, 12, 14, 22, 36, 62]
     for index, width in enumerate(widths, start=1):
         sheet.column_dimensions[get_column_letter(index)].width = width
-    sheet.auto_filter.ref = f"A1:J{max(1, sheet.max_row)}"
+    sheet.auto_filter.ref = f"A1:K{max(1, sheet.max_row)}"
     sheet.freeze_panes = "A2"
     sheet.row_dimensions[1].height = 28
     temporary = path.with_suffix(".tmp.xlsx")

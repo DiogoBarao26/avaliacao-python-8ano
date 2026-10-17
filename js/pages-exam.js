@@ -636,7 +636,12 @@ const PagesExam = (() => {
       nota: record.acertos,
       nota_formatada: `${record.acertos},0`,
       aproveitamento: record.acertos * 10,
-      mensagem: incentive(record.acertos),
+      mensagem: record.encerramento === "seguranca"
+        ? "A avaliação foi encerrada porque houve mais de 3 tentativas de copiar, colar ou capturar a tela."
+        : incentive(record.acertos),
+      encerramento: record.encerramento === "seguranca"
+        ? "Prova encerrada por tentativa de burlar a segurança"
+        : "Concluída pelo aluno",
       registro: "A nota foi calculada neste navegador.",
       salvo: true,
       revisao: Object.keys(record.answers).map((number) => ({ number: Number(number), correct: record.answers[number].correct })).sort((a, b) => a.number - b.number)
@@ -694,7 +699,10 @@ const PagesExam = (() => {
       aproveitamento: record.acertos * 10,
       started_at: record.startedAt,
       finished_at: record.finishedAt,
-      status: "Concluída"
+      status: "Concluída",
+      encerramento: record.encerramento === "seguranca"
+        ? "Prova encerrada por tentativa de burlar a segurança"
+        : "Concluída pelo aluno"
     };
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
@@ -765,18 +773,24 @@ const PagesExam = (() => {
       return { ready_to_finish: false, progress: progressOf(record), question: publicQuestion(record.current), feedback: null };
     }
     if (path === "/api/finish") {
+      const security = body.encerramento === "seguranca";
       if (record.status !== "concluida") {
-        if (Object.keys(record.answers).length !== 10) fail("Ainda existem questões sem confirmação.", 409);
+        if (!security && Object.keys(record.answers).length !== 10) fail("Ainda existem questões sem confirmação.", 409);
         record.status = "concluida";
+        record.encerramento = security ? "seguranca" : "normal";
+        if (security) record.erros = 10 - record.acertos;
         record.finishedAt = nowBr();
         writeRecord(record);
       }
       const published = await publishResult(record);
       const result = resultOf(record);
       result.salvo = published;
+      const aviso = record.encerramento === "seguranca"
+        ? "O professor foi avisado na planilha: prova encerrada por tentativa de burlar a segurança. "
+        : "";
       result.registro = published
-        ? "Sua nota foi enviada para a lista do professor."
-        : "A nota foi calculada neste navegador, mas a lista do professor não confirmou o recebimento. Use Tentar salvar novamente.";
+        ? aviso + "Sua nota foi enviada para a lista do professor."
+        : aviso + "A nota foi calculada neste navegador, mas a lista do professor não confirmou o recebimento. Use Tentar salvar novamente.";
       return { salvo: published, result };
     }
     fail("Não foi possível concluir a operação.", 404);

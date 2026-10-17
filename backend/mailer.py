@@ -55,6 +55,11 @@ class Mailer:
                     f"Início: {format_br(row['started_at'])}",
                     f"Conclusão: {format_br(row['finished_at'])}",
                     f"Identificador: {row['attempt_id']}",
+                    (
+                        "Encerramento: Prova encerrada por tentativa de burlar a segurança."
+                        if row.get("encerramento") == "seguranca"
+                        else "Encerramento: Concluída pelo aluno."
+                    ),
                     "",
                     "O registro foi realizado com sucesso no armazenamento central.",
                 ]

@@ -89,6 +89,11 @@
     });
   }
 
+  function closureText(item) {
+    if (!item || !item.encerramento || item.encerramento === "normal") return "Concluída pelo aluno";
+    return item.encerramento;
+  }
+
   function uniqueResults(rows) {
     const seen = new Set();
     return rows.filter((item) => {
@@ -100,10 +105,10 @@
   }
 
   function downloadCsv(rows) {
-    const header = ["Nome", "Turma", "Nota", "Acertos", "Erros", "Aproveitamento", "Início", "Término"];
+    const header = ["Nome", "Turma", "Nota", "Acertos", "Erros", "Aproveitamento", "Início", "Término", "Encerramento"];
     const lines = [header.join(";")].concat(rows.map((item) => [
       item.nome, item.turma, item.nota, item.acertos, item.erros,
-      item.aproveitamento, item.started_at, item.finished_at
+      item.aproveitamento, item.started_at, item.finished_at, closureText(item)
     ].map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(";")));
     const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
     const link = document.createElement("a");
@@ -132,6 +137,7 @@
           <td>${item.aproveitamento === null || item.aproveitamento === undefined ? "—" : item.aproveitamento + "%"}</td>
           <td>${escapeHtml(item.started_at || "")}</td>
           <td>${escapeHtml(item.finished_at || "")}</td>
+          <td>${escapeHtml(closureText(item))}</td>
         </tr>` : `
         <tr>
           <td>${escapeHtml(item.nome)}</td>
@@ -145,11 +151,12 @@
           <td>${escapeHtml(item.situacao)}</td>
           <td>${escapeHtml(item.email_status)}</td>
           <td>${item.resume_count}</td>
+          <td>${escapeHtml(closureText(item))}</td>
         </tr>`).join("")
-      : `<tr><td colspan="${state.pages ? 8 : 11}">Nenhuma avaliação encontrada para este filtro.</td></tr>`;
+      : `<tr><td colspan="${state.pages ? 9 : 12}">Nenhuma avaliação encontrada para este filtro.</td></tr>`;
     const head = state.pages
-      ? "<th>Aluno</th><th>Turma</th><th>Nota</th><th>Acertos</th><th>Erros</th><th>Aproveitamento</th><th>Início</th><th>Término</th>"
-      : "<th>Aluno</th><th>Turma</th><th>Situação</th><th>Nota</th><th>Acertos</th><th>Erros</th><th>Aproveitamento</th><th>Horário</th><th>Salvamento</th><th>E-mail</th><th>Recarregamentos</th>";
+      ? "<th>Aluno</th><th>Turma</th><th>Nota</th><th>Acertos</th><th>Erros</th><th>Aproveitamento</th><th>Início</th><th>Término</th><th>Encerramento</th>"
+      : "<th>Aluno</th><th>Turma</th><th>Situação</th><th>Nota</th><th>Acertos</th><th>Erros</th><th>Aproveitamento</th><th>Horário</th><th>Salvamento</th><th>E-mail</th><th>Recarregamentos</th><th>Encerramento</th>";
     app.innerHTML = `
       <section class="card">
         <p class="kicker">Planilhas e notas</p>

@@ -18,7 +18,7 @@ from pathlib import Path
 from flask import Flask, jsonify, request, send_file, send_from_directory, session
 from werkzeug.exceptions import HTTPException
 
-from excel_sync import situacao, sync_all, sync_class
+from excel_sync import encerramento_texto, situacao, sync_all, sync_class
 from grader import grade
 from mailer import TEACHER_EMAIL, incentive, student_message
 from mailer import Mailer
@@ -142,8 +142,17 @@ def result_of(store: Store, row: dict, email_configured: bool) -> dict:
         "nota": acertos,
         "nota_formatada": f"{acertos},0",
         "aproveitamento": acertos * 10,
-        "mensagem": incentive(acertos),
-        "registro": student_message(
+        "mensagem": (
+            "A avaliação foi encerrada porque houve mais de 3 tentativas de copiar, colar ou capturar a tela."
+            if row.get("encerramento") == "seguranca"
+            else incentive(acertos)
+        ),
+        "encerramento": encerramento_texto(row),
+        "registro": (
+            "O professor foi avisado na planilha: prova encerrada por tentativa de burlar a segurança. "
+            if row.get("encerramento") == "seguranca"
+            else ""
+        ) + student_message(
             True,
             bool(row["excel_synced"]),
             bool(row["email_sent"]),
@@ -173,6 +182,7 @@ def admin_view(row: dict, email_configured: bool) -> dict:
         "nota": row["acertos"] if saved else None,
         "aproveitamento": row["acertos"] * 10 if saved else None,
         "status": "Concluída" if saved else "Em andamento",
+        "encerramento": encerramento_texto(row) if saved else "Em andamento",
         "situacao": situacao(row) if saved else "Em andamento",
         "email_status": email_status if saved else "—",
         "excel_synced": bool(row["excel_synced"]),
@@ -456,8 +466,10 @@ def register_routes(app: Flask) -> None:
         if error is not None:
             return error
         store: Store = app.extensions["store"]
+        data = request.get_json(silent=True)
+        security = isinstance(data, dict) and data.get("encerramento") == "seguranca"
         try:
-            outcome = store.finish(row["attempt_id"])
+            outcome = store.finish(row["attempt_id"], security=security)
         except Exception:
             app.logger.exception("Falha ao salvar a avaliação.")
             return json_error(
