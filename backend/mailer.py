@@ -118,11 +118,11 @@ def student_message(saved: bool, excel_ok: bool, email_ok: bool, email_configure
 
 
 def incentive(acertos: int) -> str:
-    if acertos >= 9:
+    if acertos >= 18:
         return "Excelente trabalho! Você demonstrou segurança nos conteúdos desta avaliação."
-    if acertos >= 7:
+    if acertos >= 14:
         return "Muito bem! Você concluiu a avaliação com um bom desempenho."
-    if acertos >= 5:
+    if acertos >= 10:
         return "Avaliação concluída. Continue praticando para fortalecer o que você já aprendeu."
     return (
         "Avaliação concluída. Revise os conteúdos com calma e pratique mais um pouco. "

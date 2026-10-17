@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-TOTAL_QUESTIONS = 10
+TOTAL_QUESTIONS = 20
 
 Q2_CODE = """estoque = 12
 pedido = 15
@@ -292,6 +292,217 @@ print("Quantidade aceita")
             "A função pedido_valido precisa retornar 1 somente quando a quantidade é maior que zero, e 0 nos outros casos. "
             "O for deve percorrer pedidos, chamar essa função e somar 1 em aprovados a cada pedido válido. "
             "Confira a indentação e os dois-pontos."
+        ),
+    },
+    11: {
+        "type": "code",
+        "topic": "Correção de código",
+        "prompt": (
+            "O programa abaixo deveria aprovar o pedido quando o estoque é suficiente, "
+            "isto é, quando estoque é maior ou igual à quantidade. Há um erro na comparação. "
+            "Corrija o código. Exiba exatamente Aprovado ou Recusado. "
+            "O programa será testado com outros valores, inclusive quando estoque e quantidade são iguais."
+        ),
+        "starter": """if estoque > quantidade:
+    print("Aprovado")
+else:
+    print("Recusado")
+""",
+        "explanation_correct": (
+            "A comparação correta é estoque >= quantidade. Quando os dois valores são iguais, "
+            "o estoque ainda cobre o pedido e o programa exibe Aprovado."
+        ),
+        "explanation_wrong": (
+            "Troque a comparação para estoque >= quantidade. Com o sinal >, um estoque igual "
+            "à quantidade fica Recusado, e isso não atende à regra."
+        ),
+    },
+    12: {
+        "type": "code",
+        "topic": "Correção de código",
+        "prompt": (
+            "A lista pedidos já existe. O programa deve contar quantos pedidos têm quantidade "
+            "maior ou igual a 2 e exibir esse total. O código conta só as quantidades maiores que 2 "
+            "e deixa o 2 de fora. Corrija a condição. No exemplo [2, 5, 1, 4], o resultado é 3."
+        ),
+        "starter": """total = 0
+for quantidade in pedidos:
+    if quantidade > 2:
+        total = total + 1
+print(total)
+""",
+        "explanation_correct": (
+            "A condição quantidade >= 2 inclui o próprio 2. O for percorre a lista e o print mostra a contagem."
+        ),
+        "explanation_wrong": (
+            "A condição precisa ser quantidade >= 2. Com quantidade > 2, um pedido de exatamente 2 unidades não entra na conta."
+        ),
+    },
+    13: {
+        "type": "code",
+        "topic": "Correção de código",
+        "prompt": (
+            "A função estoque_baixo deve retornar 1 quando a quantidade for menor que 5 e 0 nos outros casos. "
+            "O código abaixo está com a comparação invertida. Corrija a função. "
+            "Ela será testada com várias quantidades."
+        ),
+        "starter": """def estoque_baixo(quantidade):
+    if quantidade > 5:
+        return 1
+    else:
+        return 0
+""",
+        "explanation_correct": (
+            "A função retorna 1 somente quando a quantidade é menor que 5. O 5 e os valores maiores retornam 0."
+        ),
+        "explanation_wrong": (
+            "Troque a comparação para quantidade < 5. Do jeito atual, quantidades pequenas retornam 0."
+        ),
+    },
+    14: {
+        "type": "code",
+        "topic": "Correção de código",
+        "prompt": (
+            "O pedido só pode ser aprovado quando o pagamento vale 1 e o estoque é maior ou igual à quantidade. "
+            "O código usa or e acaba aprovando casos indevidos. Troque pela condição correta, com and. "
+            "Exiba exatamente Aprovado ou Recusado."
+        ),
+        "starter": """if pagamento == 1 or estoque >= quantidade:
+    print("Aprovado")
+else:
+    print("Recusado")
+""",
+        "explanation_correct": (
+            "As duas partes precisam ser verdadeiras ao mesmo tempo: pagamento == 1 e estoque >= quantidade."
+        ),
+        "explanation_wrong": (
+            "Com or, basta uma das partes para aprovar. Use and para exigir o pagamento confirmado e o estoque suficiente."
+        ),
+    },
+    15: {
+        "type": "code",
+        "topic": "Correção de código",
+        "prompt": (
+            "A lista pedidos já existe. A função pedido_valido está certa: retorna 1 quando a quantidade é maior que zero. "
+            "O for, porém, conta os pedidos inválidos, porque compara com 0. Corrija o laço para contar os pedidos válidos. "
+            "No exemplo [3, 0, 5, 2], aprovados deve terminar em 3."
+        ),
+        "starter": """def pedido_valido(quantidade):
+    if quantidade > 0:
+        return 1
+    else:
+        return 0
+
+aprovados = 0
+for quantidade in pedidos:
+    if pedido_valido(quantidade) == 0:
+        aprovados = aprovados + 1
+""",
+        "explanation_correct": (
+            "A comparação == 1 seleciona os pedidos válidos. O for soma 1 em aprovados a cada chamada que retorna 1."
+        ),
+        "explanation_wrong": (
+            "pedido_valido(quantidade) == 0 conta justamente os pedidos que não valem. Troque por == 1."
+        ),
+    },
+    16: {
+        "type": "code",
+        "topic": "Construção de código",
+        "prompt": (
+            "As variáveis promocao e estoque já existem. promocao vale 1 quando o produto está em promoção. "
+            "Exiba Promocao quando promocao for 1 ou o estoque for maior que 20. Nos outros casos, exiba Normal. "
+            "Use if, else e o operador or. Escreva as palavras exatamente assim: Promocao e Normal. "
+            "O programa será testado com vários valores."
+        ),
+        "starter": """# promocao e estoque já existem.
+# Exiba exatamente Promocao ou Normal.
+""",
+        "explanation_correct": (
+            "A condição com or aceita promoção ou estoque acima de 20. O else exibe Normal nos demais casos."
+        ),
+        "explanation_wrong": (
+            "Use if, else e or. A mensagem Promocao aparece se promocao == 1 ou estoque > 20. "
+            "Estoque igual a 20, sem promoção, deve exibir Normal."
+        ),
+    },
+    17: {
+        "type": "code",
+        "topic": "Construção de código",
+        "prompt": (
+            "Escreva a função preco_alto. Ela recebe valor e deve retornar 1 quando o valor for maior que 50 "
+            "e 0 nos outros casos. Use if e else. A função será testada com vários números. "
+            "Não deixe o retorno fixo em 0."
+        ),
+        "starter": """def preco_alto(valor):
+    return 0
+""",
+        "explanation_correct": (
+            "A função retorna 1 apenas quando valor > 50. O valor 50 e os menores retornam 0."
+        ),
+        "explanation_wrong": (
+            "Complete o if valor > 50 para retornar 1, e o else para retornar 0. "
+            "Um return 0 fixo não distingue os preços."
+        ),
+    },
+    18: {
+        "type": "code",
+        "topic": "Construção de código",
+        "prompt": (
+            "A lista pedidos já existe e guarda quantidades. Some todas elas na variável soma e exiba soma. "
+            "Use for. No exemplo [2, 5, 1, 4], o programa exibe 12. "
+            "A lista pode estar vazia: nesse caso, a soma é 0. Não deixe a resposta fixa em um número."
+        ),
+        "starter": """soma = 0
+""",
+        "explanation_correct": (
+            "O for percorre pedidos e acumula cada quantidade em soma. O print mostra o total."
+        ),
+        "explanation_wrong": (
+            "Comece soma em 0, percorra pedidos com for e some cada quantidade. "
+            "Depois exiba soma. Uma lista vazia precisa continuar valendo 0."
+        ),
+    },
+    19: {
+        "type": "code",
+        "topic": "Construção de código",
+        "prompt": (
+            "A variável meta já existe. quantidade deve começar em 0 e aumentar de 1 em 1 "
+            "enquanto for menor que meta. Use while. Quando o laço terminar, quantidade deve ser igual a meta. "
+            "Se meta for 0, o laço não deve repetir."
+        ),
+        "starter": """quantidade = 0
+""",
+        "explanation_correct": (
+            "O while quantidade < meta soma 1 a cada volta e para quando quantidade alcança meta."
+        ),
+        "explanation_wrong": (
+            "Escreva while quantidade < meta e, dentro dele, quantidade = quantidade + 1. "
+            "A condição <= faria o laço passar de meta ou não terminar."
+        ),
+    },
+    20: {
+        "type": "code",
+        "topic": "Desafio integrador",
+        "prompt": (
+            "A lista pedidos já existe. Complete o programa: a função pedido_grande deve retornar 1 "
+            "quando a quantidade for maior ou igual a 2 e 0 nos outros casos; o for deve percorrer pedidos; "
+            "a variável grandes deve terminar com a quantidade de pedidos grandes. "
+            "No exemplo [2, 5, 1, 4], grandes fica 3. O programa será testado com outras listas."
+        ),
+        "starter": """def pedido_grande(quantidade):
+    return 0
+
+grandes = 0
+for quantidade in pedidos:
+    if pedido_grande(quantidade) == 1:
+        grandes = grandes + 1
+""",
+        "explanation_correct": (
+            "A função reconhece quantidades a partir de 2, e o for usa esse retorno para contar grandes."
+        ),
+        "explanation_wrong": (
+            "pedido_grande precisa retornar 1 quando quantidade >= 2, e 0 nos outros casos. "
+            "O for deve chamar a função e somar 1 em grandes apenas quando o retorno for 1."
         ),
     },
 }

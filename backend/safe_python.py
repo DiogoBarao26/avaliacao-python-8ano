@@ -371,8 +371,24 @@ def has_if_else(tree: ast.AST) -> bool:
     return any(isinstance(node, ast.If) and node.orelse for node in ast.walk(tree))
 
 
+def has_if(tree: ast.AST) -> bool:
+    return any(isinstance(node, ast.If) for node in ast.walk(tree))
+
+
 def has_for(tree: ast.AST) -> bool:
     return any(isinstance(node, ast.For) for node in ast.walk(tree))
+
+
+def has_while(tree: ast.AST) -> bool:
+    return any(isinstance(node, ast.While) for node in ast.walk(tree))
+
+
+def has_and(tree: ast.AST) -> bool:
+    return any(isinstance(node, ast.BoolOp) and isinstance(node.op, ast.And) for node in ast.walk(tree))
+
+
+def has_or(tree: ast.AST) -> bool:
+    return any(isinstance(node, ast.BoolOp) and isinstance(node.op, ast.Or) for node in ast.walk(tree))
 
 
 def has_function(tree: ast.AST, name: str) -> bool:

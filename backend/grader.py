@@ -1,4 +1,4 @@
-"""Correção das 10 questões. A nota é decidida somente neste módulo."""
+"""Correção das 20 questões. A nota é decidida somente neste módulo."""
 
 from __future__ import annotations
 
@@ -8,11 +8,15 @@ from questions_bank import QUESTIONS, explanation_for
 from safe_python import (
     SafeError,
     execute,
+    has_and,
     has_bool_operator,
     has_call,
     has_for,
     has_function,
+    has_if,
     has_if_else,
+    has_or,
+    has_while,
     parse_tree,
 )
 
@@ -132,6 +136,159 @@ def _grade_q10(code: str) -> bool:
     return True
 
 
+def _print_matches(code: str, cases: list) -> bool:
+    for env, expected in cases:
+        if _printed_lines(execute(code, env).output) != [str(expected)]:
+            return False
+    return True
+
+
+def _grade_q11(code: str) -> bool:
+    tree = parse_tree(code)
+    if not has_if_else(tree):
+        return False
+    return _print_matches(code, [
+        ({"estoque": 10, "quantidade": 4}, "Aprovado"),
+        ({"estoque": 3, "quantidade": 3}, "Aprovado"),
+        ({"estoque": 2, "quantidade": 5}, "Recusado"),
+        ({"estoque": 0, "quantidade": 0}, "Aprovado"),
+        ({"estoque": 1, "quantidade": 2}, "Recusado"),
+    ])
+
+
+def _grade_q12(code: str) -> bool:
+    tree = parse_tree(code)
+    if not has_for(tree) or not has_if(tree):
+        return False
+    return _print_matches(code, [
+        ({"pedidos": [2, 5, 1, 4]}, "3"),
+        ({"pedidos": [2, 2]}, "2"),
+        ({"pedidos": [1]}, "0"),
+        ({"pedidos": []}, "0"),
+        ({"pedidos": [3, 2, 0]}, "2"),
+        ({"pedidos": [2]}, "1"),
+    ])
+
+
+def _call_flag(code: str, name: str, cases: list) -> bool:
+    tree = parse_tree(code)
+    if not has_function(tree, name) or not has_if(tree):
+        return False
+    result = execute(code, {})
+    function = result.functions.get(name)
+    if function is None:
+        return False
+    for value, expected in cases:
+        if not _same_flag(result.call_function(function, [value]), expected):
+            return False
+    return True
+
+
+def _grade_q13(code: str) -> bool:
+    return _call_flag(code, "estoque_baixo", [(4, 1), (5, 0), (0, 1), (9, 0), (-1, 1), (6, 0)])
+
+
+def _grade_q14(code: str) -> bool:
+    tree = parse_tree(code)
+    if not has_if_else(tree) or not has_and(tree):
+        return False
+    return _print_matches(code, Q9_CASES)
+
+
+def _grade_counter(code: str, name: str, target: str, lists: list, minimum):
+    tree = parse_tree(code)
+    if not has_function(tree, name) or not has_for(tree) or not has_call(tree, name) or not has_if(tree):
+        return None
+    sample = None
+    for orders in lists:
+        result = execute(code, {"pedidos": list(orders)})
+        if result.env.get(target) != minimum(orders):
+            return None
+        sample = result
+    if sample is None or name not in sample.functions:
+        return None
+    return sample
+
+
+def _flags_match(sample, name: str, cases: list) -> bool:
+    function = sample.functions[name]
+    for value, expected in cases:
+        if not _same_flag(sample.call_function(function, [value]), expected):
+            return False
+    return True
+
+
+def _grade_q15(code: str) -> bool:
+    sample = _grade_counter(code, "pedido_valido", "aprovados", Q10_CASES, _count_valid)
+    return sample is not None and _flags_match(sample, "pedido_valido", Q10_FUNCTION_CASES)
+
+
+def _grade_q16(code: str) -> bool:
+    tree = parse_tree(code)
+    if not has_if_else(tree) or not has_or(tree):
+        return False
+    return _print_matches(code, [
+        ({"promocao": 1, "estoque": 5}, "Promocao"),
+        ({"promocao": 0, "estoque": 21}, "Promocao"),
+        ({"promocao": 0, "estoque": 20}, "Normal"),
+        ({"promocao": 0, "estoque": 0}, "Normal"),
+        ({"promocao": 1, "estoque": 30}, "Promocao"),
+        ({"promocao": 0, "estoque": 19}, "Normal"),
+    ])
+
+
+def _grade_q17(code: str) -> bool:
+    return _call_flag(code, "preco_alto", [(50, 0), (51, 1), (0, 0), (100, 1), (49, 0)])
+
+
+def _grade_q18(code: str) -> bool:
+    tree = parse_tree(code)
+    if not has_for(tree):
+        return False
+    return _print_matches(code, [
+        ({"pedidos": [2, 5, 1, 4]}, "12"),
+        ({"pedidos": [0, 0]}, "0"),
+        ({"pedidos": []}, "0"),
+        ({"pedidos": [8]}, "8"),
+        ({"pedidos": [-1, 3]}, "2"),
+    ])
+
+
+def _grade_q19(code: str) -> bool:
+    tree = parse_tree(code)
+    if not has_while(tree):
+        return False
+    for meta in (0, 1, 3, 5, 8):
+        result = execute(code, {"meta": meta})
+        if result.env.get("quantidade") != meta:
+            return False
+    return True
+
+
+def _grade_q20(code: str) -> bool:
+    lists = [[2, 5, 1, 4], [1, 0], [2], [], [2, 2, 2], [1, 2, 3]]
+    sample = _grade_counter(
+        code, "pedido_grande", "grandes", lists, lambda orders: sum(1 for item in orders if item >= 2)
+    )
+    return sample is not None and _flags_match(sample, "pedido_grande", [(2, 1), (1, 0), (0, 0), (5, 1), (-1, 0)])
+
+
+CODE_GRADERS = {
+    9: _grade_q9,
+    10: _grade_q10,
+    11: _grade_q11,
+    12: _grade_q12,
+    13: _grade_q13,
+    14: _grade_q14,
+    15: _grade_q15,
+    16: _grade_q16,
+    17: _grade_q17,
+    18: _grade_q18,
+    19: _grade_q19,
+    20: _grade_q20,
+}
+
+
 def grade(number: int, response: dict) -> dict:
     if number not in QUESTIONS or not isinstance(response, dict):
         raise ValueError("Questão inválida.")
@@ -142,20 +299,10 @@ def grade(number: int, response: dict) -> dict:
         correct, detail = _grade_true_false(response)
     elif question["type"] == "multiple_choice":
         correct = _grade_choice(number, response)
-    elif number == 9:
+    elif question["type"] == "code":
         code = _code_text(response)
         try:
-            correct = _grade_q9(code)
-        except SafeError:
-            correct = False
-            syntax_problem = True
-        except SyntaxError:
-            correct = False
-            syntax_problem = True
-    elif number == 10:
-        code = _code_text(response)
-        try:
-            correct = _grade_q10(code)
+            correct = CODE_GRADERS[number](code)
         except SafeError:
             correct = False
             syntax_problem = True

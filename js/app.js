@@ -21,7 +21,7 @@
   function defaultProgress() {
     return {
       question: 1,
-      total: 10,
+      total: 20,
       respondidas: 0,
       acertos: 0,
       erros: 0,
@@ -126,7 +126,7 @@
           <div class="stat"><span>Acertos</span><b>${progress.acertos}</b></div>
           <div class="stat"><span>Erros</span><b>${progress.erros}</b></div>
         </div>
-        <p><strong>Pontuação parcial:</strong> ${progress.pontuacao}/10</p>
+        <p><strong>Pontuação parcial:</strong> ${progress.pontuacao}/${progress.total}</p>
         <p class="muted">Questões respondidas: ${progress.respondidas}</p>
       </aside>
     `;
@@ -252,11 +252,11 @@
         <h1>Como será a avaliação</h1>
         <p>Todas as questões usam o mesmo contexto: o sistema de pedidos, produtos e estoque da JBS FoodTech.</p>
         <ul>
-          <li>A prova tem 10 questões e cada uma vale 1 ponto.</li>
-          <li>A nota final é a quantidade de acertos, de 0 a 10.</li>
+          <li>A prova tem 20 questões e cada uma vale 1 ponto.</li>
+          <li>A nota final é a quantidade de acertos, de 0 a 20.</li>
           <li>Você responde uma questão por vez e não pode voltar.</li>
           <li>Depois de confirmar, a resposta fica bloqueada.</li>
-          <li>Nas questões 9 e 10, escreva o código no editor. A correção verifica o comportamento do programa, não apenas o texto.</li>
+          <li>Da questão 9 à 20, escreva ou corrija o código no editor. A correção verifica o comportamento do programa, não apenas o texto.</li>
           <li>Ctrl+C, Ctrl+V e o print da tela são bloqueados. Cada tentativa gera um alerta. Se isso passar de 3 vezes, a prova encerra e o professor vê o aviso na planilha.</li>
         </ul>
         <p><strong>Início registrado:</strong> ${escapeHtml(state.student.started_at)}</p>
@@ -284,7 +284,7 @@
         ${banner("bad", state.error)}
         <div class="actions">
           <button class="btn btn-primary" id="confirm-btn" type="button" ${state.feedback ? "hidden" : ""}>Confirmar resposta</button>
-          <button class="btn btn-secondary" id="next-btn" type="button" ${state.feedback ? "" : "hidden"}>${state.progress.question === 10 ? "Finalizar avaliação" : "Próxima questão"}</button>
+          <button class="btn btn-secondary" id="next-btn" type="button" ${state.feedback ? "" : "hidden"}>${state.progress.question === state.progress.total ? "Finalizar avaliação" : "Próxima questão"}</button>
         </div>
       </section>
     `;
@@ -349,7 +349,7 @@
     state.sending = true;
     state.error = "";
     try {
-      if (state.progress.question === 10) {
+      if (state.progress.question === state.progress.total) {
         const data = await api("/api/finish", { method: "POST", body: finishBody() });
         state.result = data.result;
         state.error = data.salvo ? "" : "A lista do professor ainda não confirmou esta nota.";
@@ -375,7 +375,7 @@
     } catch (error) {
       state.sending = false;
       state.error = error.message;
-      if (state.progress.question === 10) {
+      if (state.progress.question === state.progress.total) {
         renderQuestion();
         return;
       }
@@ -531,9 +531,9 @@
         started_at: state.student ? state.student.started_at : "",
         finished_at: "",
         acertos,
-        erros: 10 - acertos,
+        erros: (state.progress.total || 20) - acertos,
         nota_formatada: `${acertos},0`,
-        aproveitamento: acertos * 10,
+        aproveitamento: Math.round(acertos * 100 / (state.progress.total || 20)),
         mensagem: "A avaliação foi encerrada porque houve mais de 3 tentativas de copiar, colar ou capturar a tela.",
         registro: "Não foi possível avisar o professor agora. Use Tentar salvar novamente.",
         encerramento: "Prova encerrada por tentativa de burlar a segurança",

@@ -141,7 +141,7 @@ def result_of(store: Store, row: dict, email_configured: bool) -> dict:
         "erros": int(row["erros"]),
         "nota": acertos,
         "nota_formatada": f"{acertos},0",
-        "aproveitamento": acertos * 10,
+        "aproveitamento": int(acertos * 100 / TOTAL_QUESTIONS),
         "mensagem": (
             "A avaliação foi encerrada porque houve mais de 3 tentativas de copiar, colar ou capturar a tela."
             if row.get("encerramento") == "seguranca"
@@ -180,7 +180,7 @@ def admin_view(row: dict, email_configured: bool) -> dict:
         "acertos": row["acertos"] if saved else None,
         "erros": row["erros"] if saved else None,
         "nota": row["acertos"] if saved else None,
-        "aproveitamento": row["acertos"] * 10 if saved else None,
+        "aproveitamento": int(row["acertos"] * 100 / TOTAL_QUESTIONS) if saved else None,
         "status": "Concluída" if saved else "Em andamento",
         "encerramento": encerramento_texto(row) if saved else "Em andamento",
         "situacao": situacao(row) if saved else "Em andamento",

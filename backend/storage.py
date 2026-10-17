@@ -10,6 +10,8 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from questions_bank import TOTAL_QUESTIONS
+
 # O horário de Brasília não usa mais horário de verão.
 TZ = timezone(timedelta(hours=-3), name="BRT")
 TURMAS = ("8A", "8B", "8C", "8D", "8E")
@@ -237,7 +239,7 @@ class Store:
                     if row is None or row["status"] != "em_andamento" or row["phase"] != "feedback":
                         conn.execute("ROLLBACK")
                         return {"conflict": True, "reason": "Confirme a resposta antes de continuar."}
-                    if row["current_question"] >= 10:
+                    if row["current_question"] >= TOTAL_QUESTIONS:
                         conn.execute("ROLLBACK")
                         return {"conflict": False, "ready_to_finish": True, "row": self._row_dict(row)}
                     conn.execute(
@@ -276,11 +278,15 @@ class Store:
                         """,
                         (attempt_id,),
                     ).fetchone()
-                    if not security and (count["total"] != 10 or row["current_question"] != 10 or row["phase"] != "feedback"):
+                    if not security and (
+                        count["total"] != TOTAL_QUESTIONS
+                        or row["current_question"] != TOTAL_QUESTIONS
+                        or row["phase"] != "feedback"
+                    ):
                         conn.execute("ROLLBACK")
                         return {"conflict": True, "reason": "Ainda existem questões sem confirmação."}
                     acertos = int(count["acertos"])
-                    erros = 10 - acertos
+                    erros = TOTAL_QUESTIONS - acertos
                     finished = now_iso()
                     encerramento = "seguranca" if security else "normal"
                     conn.execute(

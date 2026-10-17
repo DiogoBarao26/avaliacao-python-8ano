@@ -1,6 +1,6 @@
 # Avaliação de Python — 8º ano
 
-Prova digital da JBS FoodTech, com 10 questões.
+Prova digital da JBS FoodTech, com 20 questões.
 
 Link para os alunos: https://diogobarao26.github.io/avaliacao-python-8ano/
 
@@ -19,7 +19,7 @@ O repositório é público. O gabarito e também este login podem ser lidos por 
 - Registra o horário de início e não deixa alterar nome ou turma.
 - Mostra as instruções e, em seguida, uma questão por vez.
 - Corrige no servidor, bloqueia a resposta confirmada e não permite voltar.
-- Soma 1 ponto por questão certa. A nota final é o número de acertos, de 0 a 10.
+- Soma 1 ponto por questão certa. A nota final é o número de acertos, de 0 a 20.
 - Grava a tentativa em um banco local e atualiza a planilha da turma.
 - Envia um e-mail ao professor quando o servidor de e-mail está configurado.
 - Se a planilha ou o e-mail falhar, a nota permanece salva e a sincronização pode ser repetida sem duplicar o aluno.
@@ -93,15 +93,15 @@ Os testes conferem:
 
 - nome, sobrenome e as cinco turmas;
 - o gabarito das questões fechadas, inclusive executando os códigos oficiais das questões 2, 3, 5, 6, 7 e 8;
-- as soluções equivalentes das questões 9 e 10, sem usar `exec` no código do aluno;
+- as soluções equivalentes das questões 9 a 20, sem usar `exec` no código do aluno;
 - a rejeição de código com `import`, arquivo ou laço sem fim;
-- a nota 10 e a nota 0;
+- a nota 20 e a nota 0;
 - a impossibilidade de responder de novo, pular questão ou trocar o nome depois do início;
 - uma linha por aluno em cada planilha, mesmo com duas conclusões ao mesmo tempo;
 - a repetição do e-mail sem criar outra nota;
 - o acesso da área administrativa e o bloqueio de quem não entrou com a senha.
 
-Na prova, as questões 9 e 10 pedem um programa curto. O servidor interpreta só os comandos previstos no enunciado (`if`, `else`, `and`, `or`, `for`, função e `print`). Ele não executa o código do aluno com o Python do computador, não abre arquivos e não acessa a rede.
+Na prova, as questões 9 a 20 pedem um programa curto: algumas para corrigir um código e outras para escrevê-lo. O servidor interpreta só os comandos previstos no enunciado (`if`, `else`, `and`, `or`, `for`, `while`, função e `print`). Ele não executa o código do aluno com o Python do computador, não abre arquivos e não acessa a rede.
 
 ## Link dos alunos no GitHub
 

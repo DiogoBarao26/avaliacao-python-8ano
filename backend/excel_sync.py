@@ -9,6 +9,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
+from questions_bank import TOTAL_QUESTIONS
 from storage import TURMAS, format_br
 
 HEADERS = [
@@ -87,7 +88,7 @@ def write_workbook(path: Path, rows: list[dict]) -> None:
                 acertos,
                 int(row["erros"]),
                 float(acertos),
-                float(acertos * 10),
+                float(acertos * 100 / TOTAL_QUESTIONS),
                 situacao(row),
                 encerramento_texto(row),
             ]

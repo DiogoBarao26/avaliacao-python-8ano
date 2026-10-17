@@ -8,7 +8,7 @@ from contextlib import redirect_stdout
 import pytest
 
 from grader import grade
-from questions_bank import Q2_CODE, Q4_CODE, Q5_CODE, Q6_CODE, Q8_CODE, QUESTIONS, public_question
+from questions_bank import Q2_CODE, Q4_CODE, Q5_CODE, Q6_CODE, Q8_CODE, QUESTIONS, TOTAL_QUESTIONS, public_question
 from safe_python import SafeError, execute
 
 Q9_SOLUTION = """
@@ -51,14 +51,14 @@ for item in pedidos:
 
 def test_student_questions_do_not_use_pass_or_boolean_words():
     pattern = re.compile(r"\b(True|False|pass)\b")
-    for number in range(1, 11):
+    for number in range(1, TOTAL_QUESTIONS + 1):
         text = json.dumps(public_question(number), ensure_ascii=False)
         assert pattern.search(text) is None, number
 
 
 def test_public_questions_do_not_expose_the_key():
-    assert len(QUESTIONS) == 10
-    for number in range(1, 11):
+    assert len(QUESTIONS) == TOTAL_QUESTIONS
+    for number in range(1, TOTAL_QUESTIONS + 1):
         payload = public_question(number)
         assert payload["number"] == number
         assert "key" not in payload
@@ -140,6 +140,102 @@ else:
 """
     assert grade(9, {"code": hardcoded})["correct"] is False
     assert grade(9, {"code": "print('Aprovado')"})["correct"] is False
+
+
+Q11 = """
+if estoque >= quantidade:
+    print("Aprovado")
+else:
+    print("Recusado")
+"""
+
+Q12 = """
+total = 0
+for quantidade in pedidos:
+    if quantidade >= 2:
+        total = total + 1
+print(total)
+"""
+
+Q13 = """
+def estoque_baixo(quantidade):
+    if quantidade < 5:
+        return 1
+    else:
+        return 0
+"""
+
+Q14 = """
+if pagamento == 1 and estoque >= quantidade:
+    print("Aprovado")
+else:
+    print("Recusado")
+"""
+
+Q15 = """
+def pedido_valido(quantidade):
+    if quantidade > 0:
+        return 1
+    else:
+        return 0
+
+aprovados = 0
+for quantidade in pedidos:
+    if pedido_valido(quantidade) == 1:
+        aprovados = aprovados + 1
+"""
+
+Q16 = """
+if promocao == 1 or estoque > 20:
+    print("Promocao")
+else:
+    print("Normal")
+"""
+
+Q17 = """
+def preco_alto(valor):
+    if valor > 50:
+        return 1
+    else:
+        return 0
+"""
+
+Q18 = """
+soma = 0
+for quantidade in pedidos:
+    soma = soma + quantidade
+print(soma)
+"""
+
+Q19 = """
+quantidade = 0
+while quantidade < meta:
+    quantidade = quantidade + 1
+"""
+
+Q20 = """
+def pedido_grande(quantidade):
+    if quantidade >= 2:
+        return 1
+    else:
+        return 0
+
+grandes = 0
+for quantidade in pedidos:
+    if pedido_grande(quantidade) == 1:
+        grandes = grandes + 1
+"""
+
+
+def test_extra_code_questions_grade_behavior():
+    solutions = {
+        11: Q11, 12: Q12, 13: Q13, 14: Q14, 15: Q15,
+        16: Q16, 17: Q17, 18: Q18, 19: Q19, 20: Q20,
+    }
+    for number, code in solutions.items():
+        assert grade(number, {"code": code})["correct"] is True
+        assert grade(number, {"code": QUESTIONS[number]["starter"]})["correct"] is False
+        assert QUESTIONS[number]["type"] == "code"
 
 
 def test_malicious_code_is_not_executed():

@@ -8,6 +8,8 @@ from openpyxl import load_workbook
 
 from app import run_sync
 from excel_sync import HEADERS
+from questions_bank import TOTAL_QUESTIONS
+from test_grader import Q11, Q12, Q13, Q14, Q15, Q16, Q17, Q18, Q19, Q20
 
 Q9 = """
 if pagamento and estoque >= quantidade:
@@ -37,6 +39,16 @@ CORRECT = {
     8: {"option": "B"},
     9: {"code": Q9},
     10: {"code": Q10},
+    11: {"code": Q11},
+    12: {"code": Q12},
+    13: {"code": Q13},
+    14: {"code": Q14},
+    15: {"code": Q15},
+    16: {"code": Q16},
+    17: {"code": Q17},
+    18: {"code": Q18},
+    19: {"code": Q19},
+    20: {"code": Q20},
 }
 
 WRONG = {
@@ -50,6 +62,16 @@ WRONG = {
     8: {"option": "A"},
     9: {"code": "print('Aprovado')"},
     10: {"code": "aprovados = 3\n"},
+    11: {"code": "print('Recusado')"},
+    12: {"code": "print(0)\n"},
+    13: {"code": "def estoque_baixo(quantidade):\n    return 0\n"},
+    14: {"code": "print('Aprovado')"},
+    15: {"code": "aprovados = 3\n"},
+    16: {"code": "print('Normal')"},
+    17: {"code": "def preco_alto(valor):\n    return 0\n"},
+    18: {"code": "print(12)\n"},
+    19: {"code": "quantidade = 0\n"},
+    20: {"code": "grandes = 3\n"},
 }
 
 
@@ -68,7 +90,7 @@ def auth_headers(attempt_id, token):
 
 
 def finish_exam(client, headers, responses):
-    for number in range(1, 11):
+    for number in range(1, TOTAL_QUESTIONS + 1):
         state = client.get("/api/state", headers=headers)
         assert state.status_code == 200
         body = state.get_json()
@@ -81,7 +103,7 @@ def finish_exam(client, headers, responses):
             json={"question": number, "response": responses[number]},
         )
         assert answered.status_code == 200, answered.get_json()
-        if number < 10:
+        if number < TOTAL_QUESTIONS:
             moved = client.post("/api/next", headers=headers)
             assert moved.status_code == 200
             assert moved.get_json()["question"]["number"] == number + 1
@@ -108,10 +130,10 @@ def test_perfect_score_is_saved_once_per_class(client, app, sent_messages):
     data = response.get_json()
     headers = auth_headers(data["attempt_id"], token)
     result = finish_exam(client, headers, CORRECT)
-    assert result["acertos"] == 10
+    assert result["acertos"] == 20
     assert result["erros"] == 0
-    assert result["nota"] == 10
-    assert result["nota_formatada"] == "10,0"
+    assert result["nota"] == 20
+    assert result["nota_formatada"] == "20,0"
     assert result["aproveitamento"] == 100
     assert result["salvo"] is True
     assert "foi avisado" in result["registro"]
@@ -135,7 +157,7 @@ def test_perfect_score_is_saved_once_per_class(client, app, sent_messages):
     other_headers = auth_headers(other.get_json()["attempt_id"], token_b)
     other_result = finish_exam(client, other_headers, WRONG)
     assert other_result["nota"] == 0
-    assert other_result["erros"] == 10
+    assert other_result["erros"] == 20
 
     folder = Path(app.config["DATA_DIR"])
     class_a = load_workbook(folder / "notas_8A.xlsx").active
@@ -143,7 +165,7 @@ def test_perfect_score_is_saved_once_per_class(client, app, sent_messages):
     assert [cell.value for cell in class_a[1]] == HEADERS
     assert class_a.max_row == 2
     assert class_a["B2"].value == "Ana Silva"
-    assert class_a["H2"].value == 10
+    assert class_a["H2"].value == 20
     assert class_b.max_row == 2
     assert class_b["B2"].value == "Bruno Costa"
     assert class_b["H2"].value == 0
@@ -235,7 +257,7 @@ def test_admin_export_requires_login_and_separates_classes(client, app):
     rows = listing.get_json()["results"]
     assert len(rows) == 1
     assert rows[0]["nome"] == "Diego Lima"
-    assert rows[0]["nota"] == 10
+    assert rows[0]["nota"] == 20
     assert "token_hash" not in listing.get_data(as_text=True)
     missing = client.get("/backend/questions_bank.py")
     assert missing.status_code == 404
