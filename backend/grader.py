@@ -17,13 +17,13 @@ from safe_python import (
 )
 
 Q9_CASES = [
-    ({"pagamento": True, "estoque": 10, "quantidade": 4}, "Aprovado"),
-    ({"pagamento": True, "estoque": 2, "quantidade": 5}, "Recusado"),
-    ({"pagamento": False, "estoque": 10, "quantidade": 1}, "Recusado"),
-    ({"pagamento": True, "estoque": 3, "quantidade": 3}, "Aprovado"),
-    ({"pagamento": False, "estoque": 8, "quantidade": 8}, "Recusado"),
-    ({"pagamento": True, "estoque": 0, "quantidade": 0}, "Aprovado"),
-    ({"pagamento": True, "estoque": 1, "quantidade": 2}, "Recusado"),
+    ({"pagamento": 1, "estoque": 10, "quantidade": 4}, "Aprovado"),
+    ({"pagamento": 1, "estoque": 2, "quantidade": 5}, "Recusado"),
+    ({"pagamento": 0, "estoque": 10, "quantidade": 1}, "Recusado"),
+    ({"pagamento": 1, "estoque": 3, "quantidade": 3}, "Aprovado"),
+    ({"pagamento": 0, "estoque": 8, "quantidade": 8}, "Recusado"),
+    ({"pagamento": 1, "estoque": 0, "quantidade": 0}, "Aprovado"),
+    ({"pagamento": 1, "estoque": 1, "quantidade": 2}, "Recusado"),
 ]
 
 Q10_CASES = [
@@ -37,11 +37,11 @@ Q10_CASES = [
 ]
 
 Q10_FUNCTION_CASES = [
-    (3, True),
-    (1, True),
-    (0, False),
-    (-3, False),
-    (12, True),
+    (3, 1),
+    (1, 1),
+    (0, 0),
+    (-3, 0),
+    (12, 1),
 ]
 
 
@@ -104,6 +104,12 @@ def _count_valid(orders: list) -> int:
     return sum(1 for quantity in orders if isinstance(quantity, int) and quantity > 0)
 
 
+def _same_flag(value, expected: int) -> bool:
+    if expected == 1:
+        return value == 1 or value is True
+    return value == 0 or value is False
+
+
 def _grade_q10(code: str) -> bool:
     tree = parse_tree(code)
     if not has_function(tree, "pedido_valido") or not has_for(tree) or not has_call(tree, "pedido_valido"):
@@ -121,7 +127,7 @@ def _grade_q10(code: str) -> bool:
         return False
     for quantity, expected in Q10_FUNCTION_CASES:
         value = sample.call_function(function, [quantity])
-        if value is not expected:
+        if not _same_flag(value, expected):
             return False
     return True
 

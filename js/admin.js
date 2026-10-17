@@ -1,6 +1,16 @@
 (() => {
   const app = document.querySelector("#admin-app");
-  const state = { results: [], turma: "", emailConfigured: false, error: "" };
+  const adminKey = "jbs_admin";
+  const teacherUser = "diogo";
+  const teacherPassword = "diogo123";
+  const state = { results: [], turma: "", emailConfigured: false, error: "", pages: usesPages() };
+
+  function usesPages() {
+    const mode = window.JBS_CONFIG && window.JBS_CONFIG.mode;
+    if (mode === "pages") return true;
+    if (mode === "server") return false;
+    return location.hostname.endsWith("github.io");
+  }
 
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -29,16 +39,27 @@
     return data;
   }
 
+  function credentials() {
+    return {
+      username: document.querySelector("#username").value,
+      password: document.querySelector("#password").value
+    };
+  }
+
   function renderLogin() {
     app.innerHTML = `
       <section class="card">
         <p class="kicker">Acesso restrito</p>
         <h1>Consultar resultados</h1>
-        <p>As notas dos alunos ficam disponíveis apenas para o professor.</p>
+        <p>Entre com o login do professor para ver as notas da turma.</p>
         ${state.error ? `<div class="banner bad" role="alert">${escapeHtml(state.error)}</div>` : ""}
         <form id="login-form">
           <div class="field">
-            <label for="password">Senha do professor</label>
+            <label for="username">Login</label>
+            <input id="username" name="username" type="text" autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label for="password">Senha</label>
             <input id="password" type="password" autocomplete="current-password" required>
           </div>
           <div class="actions">
@@ -50,11 +71,16 @@
     document.querySelector("#login-form").addEventListener("submit", async (event) => {
       event.preventDefault();
       state.error = "";
+      const entered = credentials();
       try {
-        await api("/api/admin/login", {
-          method: "POST",
-          body: { password: document.querySelector("#password").value }
-        });
+        if (state.pages) {
+          if (entered.username.trim() !== teacherUser || entered.password !== teacherPassword) {
+            throw new Error("Usuário ou senha incorretos.");
+          }
+          sessionStorage.setItem(adminKey, "1");
+        } else {
+          await api("/api/admin/login", { method: "POST", body: entered });
+        }
         await loadResults();
       } catch (error) {
         state.error = error.message;
@@ -63,10 +89,50 @@
     });
   }
 
+  function uniqueResults(rows) {
+    const seen = new Set();
+    return rows.filter((item) => {
+      const key = item.attempt_id || `${item.nome}|${item.turma}|${item.finished_at}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function downloadCsv(rows) {
+    const header = ["Nome", "Turma", "Nota", "Acertos", "Erros", "Aproveitamento", "Início", "Término"];
+    const lines = [header.join(";")].concat(rows.map((item) => [
+      item.nome, item.turma, item.nota, item.acertos, item.erros,
+      item.aproveitamento, item.started_at, item.finished_at
+    ].map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(";")));
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "resultados.csv";
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+
   function renderResults() {
-    const rows = state.results.filter((item) => !state.turma || item.turma === state.turma);
+    const source = uniqueResults(state.results);
+    const rows = source.filter((item) => !state.turma || item.turma === state.turma);
+    const pagesNote = state.pages
+      ? "Estas são as provas concluídas pelo link do GitHub. A planilha e o e-mail continuam no computador da escola, quando a prova é iniciada por lá."
+      : (state.emailConfigured
+        ? "O envio de e-mail está configurado."
+        : "O e-mail ainda não está configurado. As notas continuam salvas no sistema e nas planilhas.");
     const body = rows.length
-      ? rows.map((item) => `
+      ? rows.map((item) => state.pages ? `
+        <tr>
+          <td>${escapeHtml(item.nome)}</td>
+          <td>${escapeHtml(item.turma)}</td>
+          <td>${item.nota === null || item.nota === undefined ? "—" : item.nota + ",0"}</td>
+          <td>${item.acertos ?? "—"}</td>
+          <td>${item.erros ?? "—"}</td>
+          <td>${item.aproveitamento === null || item.aproveitamento === undefined ? "—" : item.aproveitamento + "%"}</td>
+          <td>${escapeHtml(item.started_at || "")}</td>
+          <td>${escapeHtml(item.finished_at || "")}</td>
+        </tr>` : `
         <tr>
           <td>${escapeHtml(item.nome)}</td>
           <td>${escapeHtml(item.turma)}</td>
@@ -80,12 +146,15 @@
           <td>${escapeHtml(item.email_status)}</td>
           <td>${item.resume_count}</td>
         </tr>`).join("")
-      : `<tr><td colspan="11">Nenhuma avaliação encontrada para este filtro.</td></tr>`;
+      : `<tr><td colspan="${state.pages ? 8 : 11}">Nenhuma avaliação encontrada para este filtro.</td></tr>`;
+    const head = state.pages
+      ? "<th>Aluno</th><th>Turma</th><th>Nota</th><th>Acertos</th><th>Erros</th><th>Aproveitamento</th><th>Início</th><th>Término</th>"
+      : "<th>Aluno</th><th>Turma</th><th>Situação</th><th>Nota</th><th>Acertos</th><th>Erros</th><th>Aproveitamento</th><th>Horário</th><th>Salvamento</th><th>E-mail</th><th>Recarregamentos</th>";
     app.innerHTML = `
       <section class="card">
         <p class="kicker">Planilhas e notas</p>
         <h1>Resultados por turma</h1>
-        <p>${state.emailConfigured ? "O envio de e-mail está configurado." : "O e-mail ainda não está configurado. As notas continuam salvas no sistema e nas planilhas."}</p>
+        <p>${pagesNote}</p>
         ${state.error ? `<div class="banner bad">${escapeHtml(state.error)}</div>` : ""}
         <div class="filters" id="filters">
           ${["", "8A", "8B", "8C", "8D", "8E"].map((turma) => `
@@ -94,21 +163,16 @@
             </button>`).join("")}
         </div>
         <div class="actions">
-          <button class="btn btn-primary" id="sync-btn" type="button">Sincronizar planilhas e e-mails</button>
+          ${state.pages ? `<button class="btn btn-primary" id="csv-btn" type="button">Baixar resultados.csv</button>` : `<button class="btn btn-primary" id="sync-btn" type="button">Sincronizar planilhas e e-mails</button>`}
           <button class="btn btn-secondary" id="logout-btn" type="button">Sair</button>
         </div>
-        <div class="actions">
+        ${state.pages ? "" : `<div class="actions">
           ${["8A", "8B", "8C", "8D", "8E"].map((turma) => `
-            <a class="btn btn-secondary" href="/api/admin/export/${turma}">Baixar notas_${turma}.xlsx</a>`).join("")}
-        </div>
+            <a class="btn btn-secondary" href="api/admin/export/${turma}">Baixar notas_${turma}.xlsx</a>`).join("")}
+        </div>`}
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Aluno</th><th>Turma</th><th>Situação</th><th>Nota</th><th>Acertos</th><th>Erros</th>
-                <th>Aproveitamento</th><th>Horário</th><th>Salvamento</th><th>E-mail</th><th>Recarregamentos</th>
-              </tr>
-            </thead>
+            <thead><tr>${head}</tr></thead>
             <tbody>${body}</tbody>
           </table>
         </div>
@@ -120,23 +184,45 @@
       state.turma = button.dataset.turma;
       renderResults();
     });
-    document.querySelector("#sync-btn").addEventListener("click", async () => {
-      state.error = "";
-      try {
-        await api("/api/admin/sync", { method: "POST", body: {} });
-        await loadResults();
-      } catch (error) {
-        state.error = error.message;
-        renderResults();
-      }
-    });
+    const csv = document.querySelector("#csv-btn");
+    if (csv) csv.addEventListener("click", () => downloadCsv(rows));
+    const sync = document.querySelector("#sync-btn");
+    if (sync) {
+      sync.addEventListener("click", async () => {
+        state.error = "";
+        try {
+          await api("/api/admin/sync", { method: "POST", body: {} });
+          await loadResults();
+        } catch (error) {
+          state.error = error.message;
+          renderResults();
+        }
+      });
+    }
     document.querySelector("#logout-btn").addEventListener("click", async () => {
-      await api("/api/admin/logout", { method: "POST", body: {} });
+      sessionStorage.removeItem(adminKey);
+      if (!state.pages) await api("/api/admin/logout", { method: "POST", body: {} });
+      state.results = [];
       renderLogin();
     });
   }
 
+  async function loadPagesResults() {
+    const url = window.JBS_CONFIG && window.JBS_CONFIG.resultsUrl;
+    if (!url) throw new Error("A lista de resultados não está configurada.");
+    const response = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error("Não foi possível carregar os resultados.");
+    const data = await response.json();
+    state.results = Array.isArray(data) ? data : [];
+    state.error = "";
+    renderResults();
+  }
+
   async function loadResults() {
+    if (state.pages) {
+      await loadPagesResults();
+      return;
+    }
     const data = await api("/api/admin/results");
     state.results = data.results;
     state.emailConfigured = data.email_configured;
@@ -144,8 +230,17 @@
     renderResults();
   }
 
-  loadResults().catch((error) => {
-    state.error = error.status === 503 ? error.message : "";
+  if (state.pages && sessionStorage.getItem(adminKey) === "1") {
+    loadPagesResults().catch((error) => {
+      state.error = error.message;
+      renderLogin();
+    });
+  } else if (state.pages) {
     renderLogin();
-  });
+  } else {
+    loadResults().catch((error) => {
+      state.error = error.status === 503 ? error.message : "";
+      renderLogin();
+    });
+  }
 })();

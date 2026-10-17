@@ -173,6 +173,7 @@
           <div class="actions">
             <button class="btn btn-primary" id="start-btn" type="submit" disabled>Iniciar avaliação</button>
           </div>
+          <p class="hint"><a class="text-link" href="admin.html">Área do professor</a></p>
         </form>
       </section>
     `;
@@ -343,6 +344,7 @@
       if (state.progress.question === 10) {
         const data = await api("/api/finish", { method: "POST", body: {} });
         state.result = data.result;
+        state.error = data.salvo ? "" : "A lista do professor ainda não confirmou esta nota.";
         state.screen = "result";
         state.sending = false;
         render();
@@ -352,6 +354,7 @@
       if (data.ready_to_finish) {
         const finished = await api("/api/finish", { method: "POST", body: {} });
         state.result = finished.result;
+        state.error = finished.salvo ? "" : "A lista do professor ainda não confirmou esta nota.";
         state.screen = "result";
       } else {
         state.question = data.question;
@@ -404,7 +407,7 @@
         try {
           const data = await api("/api/finish", { method: "POST", body: {} });
           state.result = data.result;
-          state.error = "";
+          state.error = data.salvo ? "" : "A lista do professor ainda não confirmou esta nota.";
         } catch (error) {
           state.error = error.message;
         }

@@ -220,9 +220,11 @@ def test_failed_email_can_be_retried_without_a_new_grade(client, app, sent_messa
 def test_admin_export_requires_login_and_separates_classes(client, app):
     denied = client.get("/api/admin/results")
     assert denied.status_code == 401
-    bad_login = client.post("/api/admin/login", json={"password": "errada"})
+    bad_login = client.post("/api/admin/login", json={"username": "diogo", "password": "errada"})
     assert bad_login.status_code == 401
-    login = client.post("/api/admin/login", json={"password": "segredo-teste"})
+    wrong_user = client.post("/api/admin/login", json={"username": "aluno", "password": "segredo-teste"})
+    assert wrong_user.status_code == 401
+    login = client.post("/api/admin/login", json={"username": "diogo", "password": "segredo-teste"})
     assert login.status_code == 200
     response, _browser, token = start_exam(client, nome="Diego Lima", turma="8E")
     finish_exam(client, auth_headers(response.get_json()["attempt_id"], token), CORRECT)

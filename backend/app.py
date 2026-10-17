@@ -268,9 +268,9 @@ def create_app(
     app.config["PROPAGATE_EXCEPTIONS"] = testing
     app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
     app.config["DATA_DIR"] = folder
-    app.config["ADMIN_PASSWORD"] = (
-        admin_password if admin_password is not None else os.environ.get("ADMIN_PASSWORD", "")
-    )
+    app.config["ADMIN_USER"] = "diogo"
+    configured_password = admin_password if admin_password is not None else os.environ.get("ADMIN_PASSWORD", "")
+    app.config["ADMIN_PASSWORD"] = configured_password or "diogo123"
     app.config["CORS_ORIGIN"] = (
         cors_origin if cors_origin is not None else os.environ.get("CORS_ORIGIN", "")
     )
@@ -473,10 +473,11 @@ def register_routes(app: Flask) -> None:
 
     @app.post("/api/admin/login")
     def admin_login():
-        if not app.config["ADMIN_PASSWORD"]:
-            return json_error("Defina ADMIN_PASSWORD no servidor antes de usar a área administrativa.", 503)
         data = request.get_json(silent=True)
+        username = data.get("username") if isinstance(data, dict) else ""
         password = data.get("password") if isinstance(data, dict) else ""
+        if not isinstance(username, str):
+            username = ""
         if not isinstance(password, str):
             password = ""
         address = request.remote_addr or "local"
@@ -485,10 +486,12 @@ def register_routes(app: Flask) -> None:
         if len(recent) >= 8:
             failures[address] = recent
             return json_error("Muitas tentativas. Aguarde alguns minutos.", 429)
-        if not passwords_match(password, app.config["ADMIN_PASSWORD"]):
+        user_ok = passwords_match(username.strip(), app.config["ADMIN_USER"])
+        password_ok = passwords_match(password, app.config["ADMIN_PASSWORD"])
+        if not user_ok or not password_ok:
             recent.append(time.time())
             failures[address] = recent
-            return json_error("Senha incorreta.", 401)
+            return json_error("Usuário ou senha incorretos.", 401)
         failures[address] = []
         session.clear()
         session["admin"] = True
@@ -607,8 +610,7 @@ def main() -> None:
     print(f"Prova neste computador: http://127.0.0.1:{port}")
     print(f"Prova na rede da escola: http://{local_ip()}:{port}")
     print(f"Área do professor:       http://127.0.0.1:{port}/admin")
-    if not application.config["ADMIN_PASSWORD"]:
-        print("Área administrativa desativada até definir ADMIN_PASSWORD em backend/.env.")
+    print("Login da área do professor: diogo")
     if mailer.configured:
         print(f"E-mail de resultados:    {mailer.recipient}")
     else:

@@ -1,5 +1,7 @@
 import ast
 import io
+import json
+import re
 import time
 from contextlib import redirect_stdout
 
@@ -17,7 +19,7 @@ else:
 """
 
 Q9_VARIANT = """
-if quantidade <= estoque and pagamento == True:
+if quantidade <= estoque and pagamento == 1:
     print("Aprovado")
 else:
     print("Recusado")
@@ -26,9 +28,9 @@ else:
 Q10_SOLUTION = """
 def pedido_valido(quantidade):
     if quantidade > 0:
-        return True
+        return 1
     else:
-        return False
+        return 0
 
 aprovados = 0
 for quantidade in pedidos:
@@ -45,6 +47,13 @@ for item in pedidos:
     if pedido_valido(item):
         aprovados += 1
 """
+
+
+def test_student_questions_do_not_use_pass_or_boolean_words():
+    pattern = re.compile(r"\b(True|False|pass)\b")
+    for number in range(1, 11):
+        text = json.dumps(public_question(number), ensure_ascii=False)
+        assert pattern.search(text) is None, number
 
 
 def test_public_questions_do_not_expose_the_key():
@@ -69,9 +78,9 @@ def test_closed_questions_match_traced_behavior():
         execute(Q8_CODE + "\nmensagem_boas_vindas\n")
 
     base = (
-        "pagamento_confirmado = True\n"
-        "estoque_suficiente = False\n"
-        "em_promocao = True\n"
+        "pagamento_confirmado = 1\n"
+        "estoque_suficiente = 0\n"
+        "em_promocao = 1\n"
     )
     options = {
         "A": "pagamento_confirmado and estoque_suficiente",
@@ -80,7 +89,7 @@ def test_closed_questions_match_traced_behavior():
         "D": "estoque_suficiente and em_promocao",
     }
     truths = {letter: execute(base + f"print({expr})\n").output[0] for letter, expr in options.items()}
-    assert truths == {"A": False, "B": True, "C": False, "D": False}
+    assert truths == {"A": 0, "B": 1, "C": False, "D": 0}
     assert QUESTIONS[3]["key"] == "B"
 
     invalid_start = execute("quantidade = 0\nprint(quantidade <= 0)\nquantidade = 4\nprint(quantidade <= 0)\n")

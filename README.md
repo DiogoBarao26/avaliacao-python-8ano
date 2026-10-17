@@ -4,7 +4,14 @@ Prova digital da JBS FoodTech, com 10 questões.
 
 Link para os alunos: https://diogobarao26.github.io/avaliacao-python-8ano/
 
-Nesse link a prova abre direto no navegador e a nota aparece na hora. A planilha da turma e o e-mail ao professor só são gravados quando a prova roda no computador da escola, pelo `iniciar.bat`.
+Área do professor: https://diogobarao26.github.io/avaliacao-python-8ano/admin.html
+
+Login do professor: `diogo`  
+Senha: `diogo123`
+
+Nesse link a prova abre direto no navegador. Ao concluir, a nota entra na lista que o professor consulta na área administrativa. A planilha Excel e o e-mail só são gravados quando a prova roda no computador da escola, pelo `iniciar.bat`.
+
+O repositório é público. O gabarito e também este login podem ser lidos por quem abrir o código. A lista de notas do link do GitHub usa o mesmo endereço público: ela serve para a aula, e não impede que alguém consulte ou altere os registros se souber onde eles ficam.
 
 ## O que a prova faz
 
@@ -21,7 +28,7 @@ Nesse link a prova abre direto no navegador e a nota aparece na hora. A planilha
 
 1. Instale o Python 3.11 ou mais recente em um computador que os alunos alcancem pela rede.
 2. Copie `backend/.env.example` para `backend/.env`.
-3. Troque `ADMIN_PASSWORD` por uma senha que só o professor conheça.
+3. O login da área do professor é `diogo` e a senha inicial é `diogo123`. No computador da escola, `ADMIN_PASSWORD` em `backend/.env` pode trocar essa senha.
 4. Dê um duplo clique em `iniciar.bat`, ou execute na pasta do projeto:
 
 ```bat
@@ -67,7 +74,7 @@ Se esses campos estiverem vazios, o aluno ainda recebe a confirmação de que a 
 ## Como consultar e exportar os resultados
 
 1. Abra `/admin` no computador que está executando a prova.
-2. Entre com a senha definida em `ADMIN_PASSWORD`.
+2. Entre com o login `diogo` e a senha.
 3. Filtre por turma, se quiser.
 4. Use os botões **Baixar notas_8A.xlsx** até **Baixar notas_8E.xlsx**.
 5. Use **Sincronizar planilhas e e-mails** se alguma planilha ou mensagem tiver ficado pendente.

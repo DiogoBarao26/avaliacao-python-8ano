@@ -10,7 +10,7 @@ const ExamUI = (() => {
   }
 
   function colorize(code) {
-    const pattern = /(#.*$)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|\b(if|elif|else|and|or|not|True|False|for|in|while|def|return|print|pass)\b|(\d+)/gm;
+    const pattern = /(#.*$)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|\b(if|elif|else|and|or|not|for|in|while|def|return|print)\b|(\d+)/gm;
     let html = "";
     let last = 0;
     for (const match of code.matchAll(pattern)) {

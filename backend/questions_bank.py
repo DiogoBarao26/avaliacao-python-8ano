@@ -49,11 +49,11 @@ Q9_STARTER = """# pagamento, estoque e quantidade já existem.
 """
 
 Q10_STARTER = """def pedido_valido(quantidade):
-    pass
+    return 0
 
 aprovados = 0
 for quantidade in pedidos:
-    if pedido_valido(quantidade):
+    if pedido_valido(quantidade) == 1:
         aprovados = aprovados + 1
 """
 
@@ -119,9 +119,9 @@ QUESTIONS = {
             "além disso, o estoque é suficiente ou o produto está em promoção. "
             "Qual condição representa essa regra?"
         ),
-        "code": """pagamento_confirmado = True
-estoque_suficiente = False
-em_promocao = True
+        "code": """pagamento_confirmado = 1
+estoque_suficiente = 0
+em_promocao = 1
 
 if ________________:
     print("Pedido aprovado")
@@ -255,7 +255,7 @@ print("Quantidade aceita")
         "topic": "Construção de código",
         "prompt": (
             "As variáveis pagamento, estoque e quantidade já existem. "
-            "pagamento vale True quando o pagamento foi confirmado e False quando não foi. "
+            "pagamento vale 1 quando o pagamento foi confirmado e 0 quando não foi. "
             "Escreva um programa que exiba Aprovado quando o pagamento estiver confirmado e o estoque "
             "for suficiente (estoque maior ou igual à quantidade). Nos outros casos, exiba Recusado. "
             "Use if, else e o operador and. Escreva as palavras exatamente assim: Aprovado e Recusado. "
@@ -278,8 +278,8 @@ print("Quantidade aceita")
         "prompt": (
             "A lista pedidos já existe e guarda a quantidade de cada pedido. "
             "No exemplo [3, 0, 5, 2], há 3 pedidos válidos. Complete o programa com três partes: "
-            "a função pedido_valido deve retornar True quando a quantidade for maior que zero "
-            "e False nos outros casos; o for deve percorrer a lista pedidos; "
+            "a função pedido_valido deve retornar 1 quando a quantidade for maior que zero "
+            "e 0 nos outros casos; o for deve percorrer a lista pedidos; "
             "a variável aprovados deve terminar com a quantidade de pedidos válidos. "
             "O programa será testado com outras listas. Não deixe aprovados fixo em um número."
         ),
@@ -289,7 +289,7 @@ print("Quantidade aceita")
             "para contar os pedidos válidos da lista."
         ),
         "explanation_wrong": (
-            "A função pedido_valido precisa retornar True somente quando a quantidade é maior que zero. "
+            "A função pedido_valido precisa retornar 1 somente quando a quantidade é maior que zero, e 0 nos outros casos. "
             "O for deve percorrer pedidos, chamar essa função e somar 1 em aprovados a cada pedido válido. "
             "Confira a indentação e os dois-pontos."
         ),

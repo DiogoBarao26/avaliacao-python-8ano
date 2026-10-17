@@ -33,7 +33,7 @@ const PagesExam = (() => {
       type: "multiple_choice",
       topic: "Operadores and e or",
       prompt: "A JBS FoodTech aprova um pedido somente quando o pagamento foi confirmado e, além disso, o estoque é suficiente ou o produto está em promoção. Qual condição representa essa regra?",
-      code: "pagamento_confirmado = True\nestoque_suficiente = False\nem_promocao = True\n\nif ________________:\n    print(\"Pedido aprovado\")\nelse:\n    print(\"Pedido recusado\")\n",
+      code: "pagamento_confirmado = 1\nestoque_suficiente = 0\nem_promocao = 1\n\nif ________________:\n    print(\"Pedido aprovado\")\nelse:\n    print(\"Pedido recusado\")\n",
       options: [
         { id: "A", text: "pagamento_confirmado and estoque_suficiente" },
         { id: "B", text: "pagamento_confirmado and (estoque_suficiente or em_promocao)" },
@@ -116,7 +116,7 @@ const PagesExam = (() => {
     9: {
       type: "code",
       topic: "Construção de código",
-      prompt: "As variáveis pagamento, estoque e quantidade já existem. pagamento vale True quando o pagamento foi confirmado e False quando não foi. Escreva um programa que exiba Aprovado quando o pagamento estiver confirmado e o estoque for suficiente (estoque maior ou igual à quantidade). Nos outros casos, exiba Recusado. Use if, else e o operador and. Escreva as palavras exatamente assim: Aprovado e Recusado. O programa será testado com vários valores. Não deixe a resposta fixa em uma única palavra.",
+      prompt: "As variáveis pagamento, estoque e quantidade já existem. pagamento vale 1 quando o pagamento foi confirmado e 0 quando não foi. Escreva um programa que exiba Aprovado quando o pagamento estiver confirmado e o estoque for suficiente (estoque maior ou igual à quantidade). Nos outros casos, exiba Recusado. Use if, else e o operador and. Escreva as palavras exatamente assim: Aprovado e Recusado. O programa será testado com vários valores. Não deixe a resposta fixa em uma única palavra.",
       starter: "# pagamento, estoque e quantidade já existem.\n# Exiba exatamente Aprovado ou Recusado.\n",
       explanationCorrect: "Sua solução aprova o pedido somente quando o pagamento está confirmado e o estoque cobre a quantidade pedida. O else trata os outros casos.",
       explanationWrong: "O pedido só pode ser aprovado quando o pagamento está confirmado e o estoque é maior ou igual à quantidade. Use if, else e and, e exiba exatamente Aprovado ou Recusado. Confira também os dois-pontos e a indentação."
@@ -124,10 +124,10 @@ const PagesExam = (() => {
     10: {
       type: "code",
       topic: "Desafio integrador",
-      prompt: "A lista pedidos já existe e guarda a quantidade de cada pedido. No exemplo [3, 0, 5, 2], há 3 pedidos válidos. Complete o programa com três partes: a função pedido_valido deve retornar True quando a quantidade for maior que zero e False nos outros casos; o for deve percorrer a lista pedidos; a variável aprovados deve terminar com a quantidade de pedidos válidos. O programa será testado com outras listas. Não deixe aprovados fixo em um número.",
-      starter: "def pedido_valido(quantidade):\n    pass\n\naprovados = 0\nfor quantidade in pedidos:\n    if pedido_valido(quantidade):\n        aprovados = aprovados + 1\n",
+      prompt: "A lista pedidos já existe e guarda a quantidade de cada pedido. No exemplo [3, 0, 5, 2], há 3 pedidos válidos. Complete o programa com três partes: a função pedido_valido deve retornar 1 quando a quantidade for maior que zero e 0 nos outros casos; o for deve percorrer a lista pedidos; a variável aprovados deve terminar com a quantidade de pedidos válidos. O programa será testado com outras listas. Não deixe aprovados fixo em um número.",
+      starter: "def pedido_valido(quantidade):\n    return 0\n\naprovados = 0\nfor quantidade in pedidos:\n    if pedido_valido(quantidade) == 1:\n        aprovados = aprovados + 1\n",
       explanationCorrect: "A função identifica quantidades maiores que zero, e o for usa essa função para contar os pedidos válidos da lista.",
-      explanationWrong: "A função pedido_valido precisa retornar True somente quando a quantidade é maior que zero. O for deve percorrer pedidos, chamar essa função e somar 1 em aprovados a cada pedido válido. Confira a indentação e os dois-pontos."
+      explanationWrong: "A função pedido_valido precisa retornar 1 somente quando a quantidade é maior que zero, e 0 nos outros casos. O for deve percorrer pedidos, chamar essa função e somar 1 em aprovados a cada pedido válido. Confira a indentação e os dois-pontos."
     }
   };
 
@@ -407,7 +407,8 @@ const PagesExam = (() => {
         for (let i = 0; i < expr.ops.length; i += 1) {
           const right = evalExpr(expr.rights[i]);
           const op = expr.ops[i];
-          const ok = op === "eq" ? left === right : op === "ne" ? left !== right : op === "lt" ? left < right : op === "le" ? left <= right : op === "gt" ? left > right : left >= right;
+          const same = left === right || (left === true && right === 1) || (left === 1 && right === true) || (left === false && right === 0) || (left === 0 && right === false);
+          const ok = op === "eq" ? same : op === "ne" ? !same : op === "lt" ? left < right : op === "le" ? left <= right : op === "gt" ? left > right : left >= right;
           if (!ok) return false;
           left = right;
         }
@@ -525,13 +526,13 @@ const PagesExam = (() => {
       if (!hasElse && !text.includes('"type":"if"')) return false;
       if (!text.includes('"type":"if"') || !text.includes('"orelse":[{')) return false;
       const cases = [
-        [{ pagamento: true, estoque: 10, quantidade: 4 }, "Aprovado"],
-        [{ pagamento: true, estoque: 2, quantidade: 5 }, "Recusado"],
-        [{ pagamento: false, estoque: 10, quantidade: 1 }, "Recusado"],
-        [{ pagamento: true, estoque: 3, quantidade: 3 }, "Aprovado"],
-        [{ pagamento: false, estoque: 8, quantidade: 8 }, "Recusado"],
-        [{ pagamento: true, estoque: 0, quantidade: 0 }, "Aprovado"],
-        [{ pagamento: true, estoque: 1, quantidade: 2 }, "Recusado"]
+        [{ pagamento: 1, estoque: 10, quantidade: 4 }, "Aprovado"],
+        [{ pagamento: 1, estoque: 2, quantidade: 5 }, "Recusado"],
+        [{ pagamento: 0, estoque: 10, quantidade: 1 }, "Recusado"],
+        [{ pagamento: 1, estoque: 3, quantidade: 3 }, "Aprovado"],
+        [{ pagamento: 0, estoque: 8, quantidade: 8 }, "Recusado"],
+        [{ pagamento: 1, estoque: 0, quantidade: 0 }, "Aprovado"],
+        [{ pagamento: 1, estoque: 1, quantidade: 2 }, "Recusado"]
       ];
       return cases.every(([env, expected]) => printed(execute(code, env).output).join("|") === expected);
     }
@@ -546,10 +547,12 @@ const PagesExam = (() => {
       sample = result;
     }
     if (!sample || !sample.functions.pedido_valido) return false;
-    const checks = [[3, true], [1, true], [0, false], [-3, false], [12, true]];
+    const checks = [[3, 1], [1, 1], [0, 0], [-3, 0], [12, 1]];
     return checks.every(([quantity, expected]) => {
       const probe = execute(`${code}\nresultado_funcao = pedido_valido(valor_testado)\n`, { pedidos: [], valor_testado: quantity });
-      return probe.env.resultado_funcao === expected;
+      const value = probe.env.resultado_funcao;
+      if (expected === 1) return value === 1 || value === true;
+      return value === 0 || value === false;
     });
   }
 
@@ -634,7 +637,7 @@ const PagesExam = (() => {
       nota_formatada: `${record.acertos},0`,
       aproveitamento: record.acertos * 10,
       mensagem: incentive(record.acertos),
-      registro: "Avaliação concluída neste navegador. O link do GitHub mostra a sua nota, mas não grava a planilha da turma nem envia e-mail ao professor.",
+      registro: "A nota foi calculada neste navegador.",
       salvo: true,
       revisao: Object.keys(record.answers).map((number) => ({ number: Number(number), correct: record.answers[number].correct })).sort((a, b) => a.number - b.number)
     };
@@ -677,7 +680,42 @@ const PagesExam = (() => {
     return record;
   }
 
-  function handle(path, options, session) {
+  async function publishResult(record) {
+    if (record.published) return true;
+    const url = window.JBS_CONFIG && window.JBS_CONFIG.resultsUrl;
+    if (!url) return false;
+    const payload = {
+      attempt_id: record.attemptId,
+      nome: record.nome,
+      turma: record.turma,
+      nota: record.acertos,
+      acertos: record.acertos,
+      erros: record.erros,
+      aproveitamento: record.acertos * 10,
+      started_at: record.startedAt,
+      finished_at: record.finishedAt,
+      status: "Concluída"
+    };
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (response.ok) {
+          record.published = true;
+          writeRecord(record);
+          return true;
+        }
+      } catch (_error) {
+        /* tenta de novo */
+      }
+    }
+    return false;
+  }
+
+  async function handle(path, options, session) {
     const method = ((options && options.method) || "GET").toUpperCase();
     const body = (options && options.body) || {};
     if (path === "/api/start" && method === "POST") {
@@ -733,7 +771,13 @@ const PagesExam = (() => {
         record.finishedAt = nowBr();
         writeRecord(record);
       }
-      return { salvo: true, result: resultOf(record) };
+      const published = await publishResult(record);
+      const result = resultOf(record);
+      result.salvo = published;
+      result.registro = published
+        ? "Sua nota foi enviada para a lista do professor."
+        : "A nota foi calculada neste navegador, mas a lista do professor não confirmou o recebimento. Use Tentar salvar novamente.";
+      return { salvo: published, result };
     }
     fail("Não foi possível concluir a operação.", 404);
   }
