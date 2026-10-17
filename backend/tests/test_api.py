@@ -132,13 +132,14 @@ def test_perfect_score_is_saved_once_per_class(client, app, sent_messages):
     result = finish_exam(client, headers, CORRECT)
     assert result["acertos"] == 20
     assert result["erros"] == 0
-    assert result["nota"] == 20
-    assert result["nota_formatada"] == "20,0"
+    assert result["nota"] == 7
+    assert result["nota_formatada"] == "7,00"
     assert result["aproveitamento"] == 100
     assert result["salvo"] is True
     assert "foi avisado" in result["registro"]
     assert len(sent_messages) == 1
     assert "Ana Silva" in sent_messages[0].get_content()
+    assert "Nota: 7,00" in sent_messages[0].get_content()
     assert "diogo.nascimento@institutojef.org.br" == sent_messages[0]["To"]
 
     again = client.post("/api/finish", headers=headers)
@@ -157,6 +158,7 @@ def test_perfect_score_is_saved_once_per_class(client, app, sent_messages):
     other_headers = auth_headers(other.get_json()["attempt_id"], token_b)
     other_result = finish_exam(client, other_headers, WRONG)
     assert other_result["nota"] == 0
+    assert other_result["nota_formatada"] == "0,00"
     assert other_result["erros"] == 20
 
     folder = Path(app.config["DATA_DIR"])
@@ -165,7 +167,7 @@ def test_perfect_score_is_saved_once_per_class(client, app, sent_messages):
     assert [cell.value for cell in class_a[1]] == HEADERS
     assert class_a.max_row == 2
     assert class_a["B2"].value == "Ana Silva"
-    assert class_a["H2"].value == 20
+    assert class_a["H2"].value == 7
     assert class_b.max_row == 2
     assert class_b["B2"].value == "Bruno Costa"
     assert class_b["H2"].value == 0
@@ -184,7 +186,8 @@ def test_answers_cannot_be_changed_or_skipped(client):
     assert skipped.status_code == 409
     state = client.get("/api/state", headers=headers)
     assert state.get_json()["progress"]["acertos"] == 1
-    assert state.get_json()["progress"]["pontuacao"] == 1
+    assert state.get_json()["progress"]["pontuacao"] == 0.2
+    assert state.get_json()["progress"]["pontuacao_formatada"] == "0,20"
     assert "token_hash" not in json.dumps(state.get_json())
 
 
@@ -257,7 +260,8 @@ def test_admin_export_requires_login_and_separates_classes(client, app):
     rows = listing.get_json()["results"]
     assert len(rows) == 1
     assert rows[0]["nome"] == "Diego Lima"
-    assert rows[0]["nota"] == 20
+    assert rows[0]["nota"] == 7
+    assert rows[0]["nota_formatada"] == "7,00"
     assert "token_hash" not in listing.get_data(as_text=True)
     missing = client.get("/backend/questions_bank.py")
     assert missing.status_code == 404

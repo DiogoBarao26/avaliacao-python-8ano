@@ -89,6 +89,14 @@
     });
   }
 
+  function formatNota(item) {
+    if (!item || item.nota === null || item.nota === undefined || item.nota === "") return "—";
+    if (item.nota_formatada) return item.nota_formatada;
+    const cents = Math.round(Number(item.nota) * 100);
+    if (!Number.isFinite(cents)) return "—";
+    return `${Math.trunc(cents / 100)},${String(Math.abs(cents % 100)).padStart(2, "0")}`;
+  }
+
   function closureText(item) {
     if (!item || !item.encerramento || item.encerramento === "normal") return "Concluída pelo aluno";
     return item.encerramento;
@@ -107,7 +115,7 @@
   function downloadCsv(rows) {
     const header = ["Nome", "Turma", "Nota", "Acertos", "Erros", "Aproveitamento", "Início", "Término", "Encerramento"];
     const lines = [header.join(";")].concat(rows.map((item) => [
-      item.nome, item.turma, item.nota, item.acertos, item.erros,
+      item.nome, item.turma, formatNota(item), item.acertos, item.erros,
       item.aproveitamento, item.started_at, item.finished_at, closureText(item)
     ].map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(";")));
     const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
@@ -131,7 +139,7 @@
         <tr>
           <td>${escapeHtml(item.nome)}</td>
           <td>${escapeHtml(item.turma)}</td>
-          <td>${item.nota === null || item.nota === undefined ? "—" : item.nota + ",0"}</td>
+          <td>${formatNota(item)}</td>
           <td>${item.acertos ?? "—"}</td>
           <td>${item.erros ?? "—"}</td>
           <td>${item.aproveitamento === null || item.aproveitamento === undefined ? "—" : item.aproveitamento + "%"}</td>
@@ -143,7 +151,7 @@
           <td>${escapeHtml(item.nome)}</td>
           <td>${escapeHtml(item.turma)}</td>
           <td>${escapeHtml(item.status)}</td>
-          <td>${item.nota === null ? "—" : item.nota + ",0"}</td>
+          <td>${formatNota(item)}</td>
           <td>${item.acertos === null ? "—" : item.acertos}</td>
           <td>${item.erros === null ? "—" : item.erros}</td>
           <td>${item.aproveitamento === null ? "—" : item.aproveitamento + "%"}</td>

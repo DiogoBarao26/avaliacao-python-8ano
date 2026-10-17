@@ -22,7 +22,15 @@ from excel_sync import encerramento_texto, situacao, sync_all, sync_class
 from grader import grade
 from mailer import TEACHER_EMAIL, incentive, student_message
 from mailer import Mailer
-from questions_bank import QUESTIONS, TOTAL_QUESTIONS, explanation_for, public_question
+from questions_bank import (
+    MAX_SCORE_CENTS,
+    QUESTIONS,
+    TOTAL_QUESTIONS,
+    explanation_for,
+    format_score,
+    public_question,
+    question_points_cents,
+)
 from storage import TURMAS, Store, format_br
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -100,13 +108,16 @@ def load_secret(data_dir: Path) -> str:
 
 def progress_of(row: dict) -> dict:
     answered = int(row["acertos"]) + int(row["erros"])
+    cents = int(row.get("nota_cents") or 0)
     return {
         "question": row["current_question"],
         "total": TOTAL_QUESTIONS,
         "respondidas": answered,
         "acertos": row["acertos"],
         "erros": row["erros"],
-        "pontuacao": row["acertos"],
+        "nota_cents": cents,
+        "pontuacao": round(cents / 100, 2),
+        "pontuacao_formatada": format_score(cents),
         "progresso": int(answered / TOTAL_QUESTIONS * 100),
         "phase": row["phase"],
     }
@@ -132,6 +143,7 @@ def public_response(response: dict) -> dict:
 
 def result_of(store: Store, row: dict, email_configured: bool) -> dict:
     acertos = int(row["acertos"])
+    cents = int(row.get("nota_cents") or 0)
     return {
         "nome": row["nome"],
         "turma": row["turma"],
@@ -139,13 +151,13 @@ def result_of(store: Store, row: dict, email_configured: bool) -> dict:
         "finished_at": format_br(row["finished_at"]),
         "acertos": acertos,
         "erros": int(row["erros"]),
-        "nota": acertos,
-        "nota_formatada": f"{acertos},0",
-        "aproveitamento": int(acertos * 100 / TOTAL_QUESTIONS),
+        "nota": round(cents / 100, 2),
+        "nota_formatada": format_score(cents),
+        "aproveitamento": int(cents * 100 / MAX_SCORE_CENTS),
         "mensagem": (
             "A avaliação foi encerrada porque houve mais de 3 tentativas de copiar, colar ou capturar a tela."
             if row.get("encerramento") == "seguranca"
-            else incentive(acertos)
+            else incentive(cents)
         ),
         "encerramento": encerramento_texto(row),
         "registro": (
@@ -179,8 +191,9 @@ def admin_view(row: dict, email_configured: bool) -> dict:
         "finished_at": format_br(row["finished_at"]) if row["finished_at"] else "",
         "acertos": row["acertos"] if saved else None,
         "erros": row["erros"] if saved else None,
-        "nota": row["acertos"] if saved else None,
-        "aproveitamento": int(row["acertos"] * 100 / TOTAL_QUESTIONS) if saved else None,
+        "nota": round(int(row.get("nota_cents") or 0) / 100, 2) if saved else None,
+        "nota_formatada": format_score(int(row.get("nota_cents") or 0)) if saved else None,
+        "aproveitamento": int(int(row.get("nota_cents") or 0) * 100 / MAX_SCORE_CENTS) if saved else None,
         "status": "Concluída" if saved else "Em andamento",
         "encerramento": encerramento_texto(row) if saved else "Em andamento",
         "situacao": situacao(row) if saved else "Em andamento",
@@ -200,9 +213,11 @@ def feedback_of(store: Store, row: dict) -> dict | None:
     response = json.loads(answer["response_json"])
     correct = bool(answer["correct"])
     number = row["current_question"]
+    earned = question_points_cents(number) if correct else 0
     payload = {
         "correct": correct,
-        "points": 1 if correct else 0,
+        "points": round(earned / 100, 2),
+        "points_formatada": format_score(earned),
         "explanation": explanation_for(number, correct),
         "response": public_response(response),
     }
@@ -431,6 +446,7 @@ def register_routes(app: Flask) -> None:
         body = {
             "correct": graded["correct"],
             "points": graded["points"],
+            "points_formatada": graded["points_formatada"],
             "explanation": graded["explanation"],
             "locked": True,
             "progress": progress_of(saved["row"]),

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import ast
 
-from questions_bank import QUESTIONS, explanation_for
+from questions_bank import QUESTIONS, explanation_for, format_score, question_points_cents
 from safe_python import (
     SafeError,
     execute,
@@ -315,9 +315,11 @@ def grade(number: int, response: dict) -> dict:
     explanation = explanation_for(number, correct)
     if syntax_problem and not correct:
         explanation = "O código tem um erro de escrita ou usa um recurso fora do enunciado. " + explanation
+    earned = question_points_cents(number) if correct else 0
     result = {
         "correct": correct,
-        "points": 1 if correct else 0,
+        "points": round(earned / 100, 2),
+        "points_formatada": format_score(earned),
         "explanation": explanation,
     }
     if detail is not None:

@@ -19,7 +19,7 @@ O repositório é público. O gabarito e também este login podem ser lidos por 
 - Registra o horário de início e não deixa alterar nome ou turma.
 - Mostra as instruções e, em seguida, uma questão por vez.
 - Corrige no servidor, bloqueia a resposta confirmada e não permite voltar.
-- Soma 1 ponto por questão certa. A nota final é o número de acertos, de 0 a 20.
+- As questões 1 a 8 valem 0,20 cada. As questões 9 a 20 valem 0,45 cada. A nota vai de 0 a 7,00.
 - Grava a tentativa em um banco local e atualiza a planilha da turma.
 - Envia um e-mail ao professor quando o servidor de e-mail está configurado.
 - Se a planilha ou o e-mail falhar, a nota permanece salva e a sincronização pode ser repetida sem duplicar o aluno.
@@ -95,7 +95,7 @@ Os testes conferem:
 - o gabarito das questões fechadas, inclusive executando os códigos oficiais das questões 2, 3, 5, 6, 7 e 8;
 - as soluções equivalentes das questões 9 a 20, sem usar `exec` no código do aluno;
 - a rejeição de código com `import`, arquivo ou laço sem fim;
-- a nota 20 e a nota 0;
+- a nota 7,00 e a nota 0,00;
 - a impossibilidade de responder de novo, pular questão ou trocar o nome depois do início;
 - uma linha por aluno em cada planilha, mesmo com duas conclusões ao mesmo tempo;
 - a repetição do e-mail sem criar outra nota;

@@ -3,6 +3,20 @@
 from __future__ import annotations
 
 TOTAL_QUESTIONS = 20
+MAX_SCORE_CENTS = 700
+
+
+def question_points_cents(number: int) -> int:
+    if 1 <= number <= 8:
+        return 20
+    if 9 <= number <= TOTAL_QUESTIONS:
+        return 45
+    raise ValueError("Questão inválida.")
+
+
+def format_score(cents: int) -> str:
+    cents = int(cents)
+    return f"{cents // 100},{cents % 100:02d}"
 
 Q2_CODE = """estoque = 12
 pedido = 15
@@ -64,7 +78,7 @@ QUESTIONS = {
         "prompt": (
             "A JBS FoodTech está programando a verificação de um pedido. "
             "Classifique cada afirmação sobre if, elif e else. "
-            "A questão vale 1 ponto somente se todas estiverem corretas."
+            "A questão vale 0,20 somente se todas estiverem corretas."
         ),
         "statements": [
             {
@@ -513,6 +527,7 @@ def public_question(number: int) -> dict:
     payload = {
         "number": number,
         "total": TOTAL_QUESTIONS,
+        "valor": format_score(question_points_cents(number)),
         "type": question["type"],
         "topic": question["topic"],
         "prompt": question["prompt"],

@@ -5,6 +5,7 @@ from __future__ import annotations
 import smtplib
 from email.message import EmailMessage
 
+from questions_bank import MAX_SCORE_CENTS, format_score
 from storage import format_br
 
 TEACHER_EMAIL = "diogo.nascimento@institutojef.org.br"
@@ -38,6 +39,7 @@ class Mailer:
         if not self.configured:
             raise MailNotConfigured("Servidor de e-mail não configurado.")
         acertos = int(row["acertos"])
+        cents = int(row.get("nota_cents") or 0)
         message = EmailMessage()
         message["Subject"] = f"Resultado da avaliação de Python — {row['nome']} ({row['turma']})"
         message["From"] = self.sender_address
@@ -49,8 +51,9 @@ class Mailer:
                     "",
                     f"Aluno: {row['nome']}",
                     f"Turma: {row['turma']}",
-                    f"Nota: {acertos},0",
+                    f"Nota: {format_score(cents)}",
                     f"Acertos: {acertos}",
+                    f"Aproveitamento: {int(cents * 100 / MAX_SCORE_CENTS)}%",
                     f"Erros: {int(row['erros'])}",
                     f"Início: {format_br(row['started_at'])}",
                     f"Conclusão: {format_br(row['finished_at'])}",
@@ -117,12 +120,12 @@ def student_message(saved: bool, excel_ok: bool, email_ok: bool, email_configure
     )
 
 
-def incentive(acertos: int) -> str:
-    if acertos >= 18:
+def incentive(cents: int) -> str:
+    if cents >= 630:
         return "Excelente trabalho! Você demonstrou segurança nos conteúdos desta avaliação."
-    if acertos >= 14:
+    if cents >= 490:
         return "Muito bem! Você concluiu a avaliação com um bom desempenho."
-    if acertos >= 10:
+    if cents >= 350:
         return "Avaliação concluída. Continue praticando para fortalecer o que você já aprendeu."
     return (
         "Avaliação concluída. Revise os conteúdos com calma e pratique mais um pouco. "

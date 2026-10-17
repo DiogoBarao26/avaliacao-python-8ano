@@ -25,7 +25,9 @@
       respondidas: 0,
       acertos: 0,
       erros: 0,
+      nota_cents: 0,
       pontuacao: 0,
+      pontuacao_formatada: "0,00",
       progresso: 0
     };
   }
@@ -126,7 +128,7 @@
           <div class="stat"><span>Acertos</span><b>${progress.acertos}</b></div>
           <div class="stat"><span>Erros</span><b>${progress.erros}</b></div>
         </div>
-        <p><strong>Pontuação parcial:</strong> ${progress.pontuacao}/${progress.total}</p>
+        <p><strong>Pontuação parcial:</strong> ${escapeHtml(progress.pontuacao_formatada || "0,00")} / 7,00</p>
         <p class="muted">Questões respondidas: ${progress.respondidas}</p>
       </aside>
     `;
@@ -252,8 +254,8 @@
         <h1>Como será a avaliação</h1>
         <p>Todas as questões usam o mesmo contexto: o sistema de pedidos, produtos e estoque da JBS FoodTech.</p>
         <ul>
-          <li>A prova tem 20 questões e cada uma vale 1 ponto.</li>
-          <li>A nota final é a quantidade de acertos, de 0 a 20.</li>
+          <li>A prova tem 20 questões e vale 7,00 no total.</li>
+          <li>As questões 1 a 8 valem 0,20 cada. As questões 9 a 20 valem 0,45 cada.</li>
           <li>Você responde uma questão por vez e não pode voltar.</li>
           <li>Depois de confirmar, a resposta fica bloqueada.</li>
           <li>Da questão 9 à 20, escreva ou corrija o código no editor. A correção verifica o comportamento do programa, não apenas o texto.</li>
@@ -292,7 +294,8 @@
     ExamUI.renderQuestion(host, { question: state.question, feedback: state.feedback }, refreshConfirm);
     if (state.feedback) {
       const kind = state.feedback.correct ? "ok" : "bad";
-      const title = state.feedback.correct ? "Resposta correta. Você recebeu 1 ponto." : "Resposta incorreta. Esta questão ficou com 0 ponto.";
+      const earned = state.feedback.points_formatada || "0,00";
+      const title = state.feedback.correct ? `Resposta correta. Você recebeu ${earned}.` : "Resposta incorreta. Esta questão ficou com 0,00.";
       document.querySelector("#feedback-host").innerHTML = `${banner(kind, title)}${banner("info", state.feedback.explanation)}`;
       document.querySelector("#next-btn").addEventListener("click", goNext);
     } else {
@@ -327,6 +330,7 @@
       state.feedback = {
         correct: data.correct,
         points: data.points,
+        points_formatada: data.points_formatada,
         explanation: data.explanation,
         detail: data.detail || null,
         response
@@ -524,6 +528,7 @@
       state.error = data.salvo ? "" : "A lista do professor ainda não confirmou esta nota.";
     } catch (error) {
       const acertos = state.progress ? state.progress.acertos : 0;
+      const cents = state.progress && state.progress.nota_cents ? state.progress.nota_cents : 0;
       state.error = error.message;
       state.result = {
         nome: state.student ? state.student.nome : "",
@@ -532,8 +537,8 @@
         finished_at: "",
         acertos,
         erros: (state.progress.total || 20) - acertos,
-        nota_formatada: `${acertos},0`,
-        aproveitamento: Math.round(acertos * 100 / (state.progress.total || 20)),
+        nota_formatada: state.progress && state.progress.pontuacao_formatada ? state.progress.pontuacao_formatada : "0,00",
+        aproveitamento: Math.round(cents * 100 / 700),
         mensagem: "A avaliação foi encerrada porque houve mais de 3 tentativas de copiar, colar ou capturar a tela.",
         registro: "Não foi possível avisar o professor agora. Use Tentar salvar novamente.",
         encerramento: "Prova encerrada por tentativa de burlar a segurança",

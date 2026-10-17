@@ -114,7 +114,8 @@ def test_question_five_output_matches_key():
 def test_true_false_requires_every_statement():
     perfect = {"answers": {"1": True, "2": True, "3": False, "4": False}}
     almost = {"answers": {"1": True, "2": True, "3": True, "4": False}}
-    assert grade(1, perfect)["points"] == 1
+    assert grade(1, perfect)["points"] == 0.2
+    assert grade(1, perfect)["points_formatada"] == "0,20"
     assert grade(1, almost)["points"] == 0
     assert grade(1, almost)["detail"][2]["is_right"] is False
 
@@ -122,7 +123,7 @@ def test_true_false_requires_every_statement():
 def test_multiple_choice_keys():
     expected = {2: "C", 3: "B", 4: "B", 5: "C", 6: "B", 7: "B", 8: "B"}
     for number, option in expected.items():
-        assert grade(number, {"option": option})["points"] == 1
+        assert grade(number, {"option": option})["points"] == 0.2
         wrong = "A" if option != "A" else "B"
         assert grade(number, {"option": wrong})["points"] == 0
 

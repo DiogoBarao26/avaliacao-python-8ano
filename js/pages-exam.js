@@ -2,11 +2,25 @@
 const PagesExam = (() => {
   const STORAGE = "jbs_pages_record";
   const TOTAL = 20;
+  const MAX_CENTS = 700;
+  function pointsCents(number) {
+    return number <= 8 ? 20 : 45;
+  }
+  function formatScore(cents) {
+    const safe = Math.max(0, Math.round(cents));
+    return `${Math.floor(safe / 100)},${String(safe % 100).padStart(2, "0")}`;
+  }
+  function scoreCents(record) {
+    return Object.keys(record.answers || {}).reduce((sum, number) => {
+      const answer = record.answers[number];
+      return sum + (answer && answer.correct ? pointsCents(Number(number)) : 0);
+    }, 0);
+  }
   const QUESTIONS = {
     1: {
       type: "true_false",
       topic: "if, elif e else",
-      prompt: "A JBS FoodTech está programando a verificação de um pedido. Classifique cada afirmação sobre if, elif e else. A questão vale 1 ponto somente se todas estiverem corretas.",
+      prompt: "A JBS FoodTech está programando a verificação de um pedido. Classifique cada afirmação sobre if, elif e else. A questão vale 0,20 somente se todas estiverem corretas.",
       statements: [
         { id: "1", text: "O else é executado quando a condição do if é falsa e nenhum elif é verdadeiro." },
         { id: "2", text: "É possível usar vários elif para tratar situações diferentes de um pedido." },
@@ -739,23 +753,30 @@ const PagesExam = (() => {
         return { id: item.id, is_right: answers[item.id] === question.key[item.id] };
       });
       const correct = detail.every((item) => item.is_right);
-      return { correct, points: correct ? 1 : 0, explanation: question.explanation, detail };
+      return Object.assign(scorePayload(number, correct), { explanation: question.explanation, detail });
     }
     if (question.type === "multiple_choice") {
       if (!["A", "B", "C", "D"].includes(response.option)) throw new Error("Selecione uma alternativa.");
       const correct = response.option === question.key;
-      return { correct, points: correct ? 1 : 0, explanation: question.explanation };
+      return Object.assign(scorePayload(number, correct), { explanation: question.explanation });
     }
     if (typeof response.code !== "string" || !response.code.trim()) throw new Error("Escreva o código antes de confirmar.");
     let correct = false;
     try { correct = gradeCode(number, response.code); } catch (_error) { correct = false; }
     const explanation = correct ? question.explanationCorrect : question.explanationWrong;
-    return { correct, points: correct ? 1 : 0, explanation: correct ? explanation : `O código tem um erro de escrita ou ainda não segue o enunciado. ${explanation}` };
+    return Object.assign(scorePayload(number, correct), {
+      explanation: correct ? explanation : `O código tem um erro de escrita ou ainda não segue o enunciado. ${explanation}`
+    });
+  }
+
+  function scorePayload(number, correct) {
+    const cents = correct ? pointsCents(number) : 0;
+    return { correct, points: cents / 100, points_formatada: formatScore(cents) };
   }
 
   function publicQuestion(number) {
     const question = QUESTIONS[number];
-    const payload = { number, total: TOTAL, type: question.type, topic: question.topic, prompt: question.prompt };
+    const payload = { number, total: TOTAL, valor: formatScore(pointsCents(number)), type: question.type, topic: question.topic, prompt: question.prompt };
     if (question.type === "true_false") payload.statements = question.statements;
     else if (question.type === "multiple_choice") {
       payload.code = question.code || "";
@@ -792,24 +813,28 @@ const PagesExam = (() => {
   function writeRecord(record) { sessionStorage.setItem(STORAGE, JSON.stringify(record)); }
   function progressOf(record) {
     const answered = record.acertos + record.erros;
+    const cents = scoreCents(record);
     return {
       question: record.current,
       total: TOTAL,
       respondidas: answered,
       acertos: record.acertos,
       erros: record.erros,
-      pontuacao: record.acertos,
+      nota_cents: cents,
+      pontuacao: cents / 100,
+      pontuacao_formatada: formatScore(cents),
       progresso: Math.round(answered / TOTAL * 100),
       phase: record.phase
     };
   }
-  function incentive(score) {
-    if (score >= 18) return "Excelente trabalho! Você demonstrou segurança nos conteúdos desta avaliação.";
-    if (score >= 14) return "Muito bem! Você concluiu a avaliação com um bom desempenho.";
-    if (score >= 10) return "Avaliação concluída. Continue praticando para fortalecer o que você já aprendeu.";
+  function incentive(cents) {
+    if (cents >= 630) return "Excelente trabalho! Você demonstrou segurança nos conteúdos desta avaliação.";
+    if (cents >= 490) return "Muito bem! Você concluiu a avaliação com um bom desempenho.";
+    if (cents >= 350) return "Avaliação concluída. Continue praticando para fortalecer o que você já aprendeu.";
     return "Avaliação concluída. Revise os conteúdos com calma e pratique mais um pouco. Você é capaz de avançar.";
   }
   function resultOf(record) {
+    const cents = scoreCents(record);
     return {
       nome: record.nome,
       turma: record.turma,
@@ -817,12 +842,12 @@ const PagesExam = (() => {
       finished_at: record.finishedAt,
       acertos: record.acertos,
       erros: record.erros,
-      nota: record.acertos,
-      nota_formatada: `${record.acertos},0`,
-      aproveitamento: Math.round(record.acertos * 100 / TOTAL),
+      nota: cents / 100,
+      nota_formatada: formatScore(cents),
+      aproveitamento: Math.round(cents * 100 / MAX_CENTS),
       mensagem: record.encerramento === "seguranca"
         ? "A avaliação foi encerrada porque houve mais de 3 tentativas de copiar, colar ou capturar a tela."
-        : incentive(record.acertos),
+        : incentive(cents),
       encerramento: record.encerramento === "seguranca"
         ? "Prova encerrada por tentativa de burlar a segurança"
         : "Concluída pelo aluno",
@@ -848,7 +873,8 @@ const PagesExam = (() => {
       const saved = record.answers[record.current];
       payload.feedback = {
         correct: saved.correct,
-        points: saved.correct ? 1 : 0,
+        points: saved.correct ? pointsCents(record.current) / 100 : 0,
+        points_formatada: formatScore(saved.correct ? pointsCents(record.current) : 0),
         explanation: saved.explanation,
         detail: saved.detail || null,
         response: saved.response
@@ -877,10 +903,11 @@ const PagesExam = (() => {
       attempt_id: record.attemptId,
       nome: record.nome,
       turma: record.turma,
-      nota: record.acertos,
+      nota: scoreCents(record) / 100,
+      nota_formatada: formatScore(scoreCents(record)),
       acertos: record.acertos,
       erros: record.erros,
-      aproveitamento: Math.round(record.acertos * 100 / TOTAL),
+      aproveitamento: Math.round(scoreCents(record) * 100 / MAX_CENTS),
       started_at: record.startedAt,
       finished_at: record.finishedAt,
       status: "Concluída",

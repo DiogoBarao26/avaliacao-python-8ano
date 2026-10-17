@@ -116,6 +116,7 @@ const ExamUI = (() => {
     host.innerHTML = `
       <p class="topic">${escapeHtml(question.topic)}</p>
       <h2>Questão ${question.number}</h2>
+      <p class="muted">Vale ${escapeHtml(question.valor || (question.number <= 8 ? "0,20" : "0,45"))}</p>
       <p class="prompt">${escapeHtml(question.prompt)}</p>
       ${body}
     `;

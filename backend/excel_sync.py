@@ -9,7 +9,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
-from questions_bank import TOTAL_QUESTIONS
+from questions_bank import MAX_SCORE_CENTS
 from storage import TURMAS, format_br
 
 HEADERS = [
@@ -78,6 +78,7 @@ def write_workbook(path: Path, rows: list[dict]) -> None:
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
     for row in rows:
         acertos = int(row["acertos"])
+        cents = int(row.get("nota_cents") or 0)
         sheet.append(
             [
                 excel_text(row["attempt_id"]),
@@ -87,8 +88,8 @@ def write_workbook(path: Path, rows: list[dict]) -> None:
                 format_br(row["finished_at"]),
                 acertos,
                 int(row["erros"]),
-                float(acertos),
-                float(acertos * 100 / TOTAL_QUESTIONS),
+                round(cents / 100, 2),
+                int(cents * 100 / MAX_SCORE_CENTS),
                 situacao(row),
                 encerramento_texto(row),
             ]
@@ -97,8 +98,8 @@ def write_workbook(path: Path, rows: list[dict]) -> None:
         for cell in data_row:
             cell.border = thin
             cell.alignment = Alignment(vertical="center")
-        data_row[7].number_format = "0.0"
-        data_row[8].number_format = "0.0"
+        data_row[7].number_format = "0.00"
+        data_row[8].number_format = "0"
     widths = [40, 36, 12, 20, 20, 12, 12, 14, 22, 36, 62]
     for index, width in enumerate(widths, start=1):
         sheet.column_dimensions[get_column_letter(index)].width = width

@@ -10,7 +10,7 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from questions_bank import TOTAL_QUESTIONS
+from questions_bank import TOTAL_QUESTIONS, question_points_cents
 
 # O horário de Brasília não usa mais horário de verão.
 TZ = timezone(timedelta(hours=-3), name="BRT")
@@ -36,6 +36,17 @@ def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
+def _score_cents(conn: sqlite3.Connection, attempt_id: str) -> int:
+    rows = conn.execute(
+        "SELECT question, correct FROM answers WHERE attempt_id = ?",
+        (attempt_id,),
+    ).fetchall()
+    return sum(
+        question_points_cents(int(item["question"])) if item["correct"] else 0
+        for item in rows
+    )
+
+
 class Store:
     def __init__(self, db_path: Path):
         self.db_path = Path(db_path)
@@ -57,6 +68,7 @@ class Store:
                     phase TEXT NOT NULL,
                     acertos INTEGER NOT NULL DEFAULT 0,
                     erros INTEGER NOT NULL DEFAULT 0,
+                    nota_cents INTEGER NOT NULL DEFAULT 0,
                     status TEXT NOT NULL,
                     saved INTEGER NOT NULL DEFAULT 0,
                     excel_synced INTEGER NOT NULL DEFAULT 0,
@@ -83,6 +95,10 @@ class Store:
             if "encerramento" not in columns:
                 conn.execute(
                     "ALTER TABLE attempts ADD COLUMN encerramento TEXT NOT NULL DEFAULT 'normal'"
+                )
+            if "nota_cents" not in columns:
+                conn.execute(
+                    "ALTER TABLE attempts ADD COLUMN nota_cents INTEGER NOT NULL DEFAULT 0"
                 )
 
     def _connect(self) -> sqlite3.Connection:
@@ -210,13 +226,14 @@ class Store:
                     )
                     acertos = row["acertos"] + (1 if correct else 0)
                     erros = row["erros"] + (0 if correct else 1)
+                    nota_cents = _score_cents(conn, attempt_id)
                     conn.execute(
                         """
                         UPDATE attempts
-                        SET acertos = ?, erros = ?, phase = 'feedback'
+                        SET acertos = ?, erros = ?, nota_cents = ?, phase = 'feedback'
                         WHERE attempt_id = ?
                         """,
-                        (acertos, erros, attempt_id),
+                        (acertos, erros, nota_cents, attempt_id),
                     )
                     conn.execute("COMMIT")
                 except sqlite3.IntegrityError:
@@ -287,16 +304,17 @@ class Store:
                         return {"conflict": True, "reason": "Ainda existem questões sem confirmação."}
                     acertos = int(count["acertos"])
                     erros = TOTAL_QUESTIONS - acertos
+                    nota_cents = _score_cents(conn, attempt_id)
                     finished = now_iso()
                     encerramento = "seguranca" if security else "normal"
                     conn.execute(
                         """
                         UPDATE attempts
                         SET status = 'concluida', saved = 1, finished_at = ?, acertos = ?, erros = ?,
-                            encerramento = ?
+                            nota_cents = ?, encerramento = ?
                         WHERE attempt_id = ? AND status = 'em_andamento'
                         """,
-                        (finished, acertos, erros, encerramento, attempt_id),
+                        (finished, acertos, erros, nota_cents, encerramento, attempt_id),
                     )
                     conn.execute("COMMIT")
                 except Exception:
