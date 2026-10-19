@@ -39,6 +39,16 @@
     return data;
   }
 
+  function readableError(error) {
+    const message = String((error && error.message) || "");
+    if (message === "Failed to fetch" || message === "Load failed" || message === "NetworkError when attempting to fetch resource.") {
+      return state.pages
+        ? "A lista de notas não respondeu. Atualize a página com Ctrl+F5 e entre de novo."
+        : "Não foi possível falar com o servidor da prova. Abra o link do GitHub ou inicie o computador da escola.";
+    }
+    return message || "Não foi possível concluir a operação.";
+  }
+
   function credentials() {
     return {
       username: document.querySelector("#username").value,
@@ -83,7 +93,7 @@
         }
         await loadResults();
       } catch (error) {
-        state.error = error.message;
+        state.error = readableError(error);
         renderLogin();
       }
     });
@@ -209,7 +219,7 @@
           await api("/api/admin/sync", { method: "POST", body: {} });
           await loadResults();
         } catch (error) {
-          state.error = error.message;
+          state.error = readableError(error);
           renderResults();
         }
       });
@@ -226,7 +236,7 @@
     const url = window.JBS_CONFIG && window.JBS_CONFIG.resultsUrl;
     if (!url) throw new Error("A lista de resultados não está configurada.");
     const response = await fetch(url, { headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error("Não foi possível carregar os resultados.");
+    if (!response.ok) throw new Error("A lista de notas não respondeu. Atualize a página com Ctrl+F5 e entre de novo.");
     const data = await response.json();
     state.results = Array.isArray(data) ? data : [];
     state.error = "";
@@ -247,14 +257,15 @@
 
   if (state.pages && sessionStorage.getItem(adminKey) === "1") {
     loadPagesResults().catch((error) => {
-      state.error = error.message;
+      sessionStorage.removeItem(adminKey);
+      state.error = readableError(error);
       renderLogin();
     });
   } else if (state.pages) {
     renderLogin();
   } else {
     loadResults().catch((error) => {
-      state.error = error.status === 503 ? error.message : "";
+      state.error = error.status === 503 ? readableError(error) : "";
       renderLogin();
     });
   }

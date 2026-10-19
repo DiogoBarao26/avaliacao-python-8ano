@@ -11,7 +11,7 @@ Senha: `diogo123`
 
 Nesse link a prova abre direto no navegador. Ao concluir, a nota entra na lista que o professor consulta na área administrativa. A planilha Excel e o e-mail só são gravados quando a prova roda no computador da escola, pelo `iniciar.bat`.
 
-O repositório é público. O gabarito e também este login podem ser lidos por quem abrir o código. A lista de notas do link do GitHub usa o mesmo endereço público: ela serve para a aula, e não impede que alguém consulte ou altere os registros se souber onde eles ficam.
+O repositório é público. O gabarito e também este login podem ser lidos por quem abrir o código. A lista de notas do link do GitHub usa o mesmo endereço público: ela serve para a aula, e não impede que alguém consulte ou altere os registros se souber onde eles ficam. Essa lista gratuita deixa de responder depois de cerca de um dia; as notas dela não voltam, e a área do professor precisa de uma lista nova.
 
 ## O que a prova faz
 
