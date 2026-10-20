@@ -111,7 +111,12 @@ const ExamUI = (() => {
           <span><strong>${escapeHtml(option.id)})</strong> ${escapeHtml(option.text)}</span>
         </label>`).join("")}</div>`;
     } else {
-      body = editor(response.code || question.starter || "", locked);
+      body = editor(response.code || question.starter || "", locked) + `
+        <div class="code-tools">
+          <button class="btn btn-secondary" type="button" id="run-btn">Testar código</button>
+        </div>
+        <pre id="run-log" class="run-log" hidden></pre>
+      `;
     }
     host.innerHTML = `
       <p class="topic">${escapeHtml(question.topic)}</p>
@@ -124,6 +129,17 @@ const ExamUI = (() => {
       bindEditor(host, question.starter || "");
     } else if (question.type === "code") {
       bindEditor(host, response.code || "");
+    }
+    const run = host.querySelector("#run-btn");
+    if (run) {
+      run.addEventListener("click", () => {
+        const input = host.querySelector(".editor-input");
+        const log = host.querySelector("#run-log");
+        const result = PagesExam.preview(input ? input.value : "");
+        log.hidden = false;
+        log.className = "run-log " + (result.ok ? "ok" : "bad");
+        log.textContent = result.text;
+      });
     }
     if (!locked) {
       host.addEventListener("input", onChange);

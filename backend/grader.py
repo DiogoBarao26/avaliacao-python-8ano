@@ -84,6 +84,35 @@ def _grade_choice(number: int, response: dict) -> bool:
     return option == QUESTIONS[number]["key"]
 
 
+def _without_inputs(code: str, names: set[str]) -> str:
+    if not names:
+        return code
+    tree = ast.parse(code)
+    kept = []
+    for stmt in tree.body:
+        if (
+            isinstance(stmt, ast.Assign)
+            and len(stmt.targets) == 1
+            and isinstance(stmt.targets[0], ast.Name)
+            and stmt.targets[0].id in names
+        ):
+            continue
+        kept.append(stmt)
+    tree.body = kept
+    return ast.unparse(tree)
+
+
+def _creates(code: str, names: set[str]) -> bool:
+    if not names:
+        return True
+    tree = ast.parse(code)
+    found = set()
+    for stmt in tree.body:
+        if isinstance(stmt, ast.Assign) and len(stmt.targets) == 1 and isinstance(stmt.targets[0], ast.Name):
+            found.add(stmt.targets[0].id)
+    return names <= found
+
+
 def _code_text(response: dict) -> str:
     code = response.get("code")
     if not isinstance(code, str) or not code.strip():
@@ -95,10 +124,12 @@ def _code_text(response: dict) -> str:
 
 def _grade_q9(code: str) -> bool:
     tree = parse_tree(code)
-    if not has_if_else(tree) or not has_bool_operator(tree):
+    names = {"pagamento", "estoque", "quantidade"}
+    if not _creates(code, names) or not has_if_else(tree) or not has_bool_operator(tree):
         return False
+    prepared = _without_inputs(code, names)
     for env, expected in Q9_CASES:
-        result = execute(code, env)
+        result = execute(prepared, env)
         if _printed_lines(result.output) != [expected]:
             return False
     return True
@@ -116,13 +147,16 @@ def _same_flag(value, expected: int) -> bool:
 
 def _grade_q10(code: str) -> bool:
     tree = parse_tree(code)
+    if not _creates(code, {"pedidos"}):
+        return False
     if not has_function(tree, "pedido_valido") or not has_for(tree) or not has_call(tree, "pedido_valido"):
         return False
     if not any(isinstance(node, ast.If) for node in ast.walk(tree)):
         return False
+    prepared = _without_inputs(code, {"pedidos"})
     sample = None
     for orders in Q10_CASES:
-        result = execute(code, {"pedidos": list(orders)})
+        result = execute(prepared, {"pedidos": list(orders)})
         if result.env.get("aprovados") != _count_valid(orders):
             return False
         sample = result
@@ -136,16 +170,18 @@ def _grade_q10(code: str) -> bool:
     return True
 
 
-def _print_matches(code: str, cases: list) -> bool:
+def _print_matches(code: str, cases: list, names: set[str] | None = None) -> bool:
+    prepared = _without_inputs(code, names or set())
     for env, expected in cases:
-        if _printed_lines(execute(code, env).output) != [str(expected)]:
+        if _printed_lines(execute(prepared, env).output) != [str(expected)]:
             return False
     return True
 
 
 def _grade_q11(code: str) -> bool:
     tree = parse_tree(code)
-    if not has_if_else(tree):
+    names = {"estoque", "quantidade"}
+    if not _creates(code, names) or not has_if_else(tree):
         return False
     return _print_matches(code, [
         ({"estoque": 10, "quantidade": 4}, "Aprovado"),
@@ -153,12 +189,12 @@ def _grade_q11(code: str) -> bool:
         ({"estoque": 2, "quantidade": 5}, "Recusado"),
         ({"estoque": 0, "quantidade": 0}, "Aprovado"),
         ({"estoque": 1, "quantidade": 2}, "Recusado"),
-    ])
+    ], names)
 
 
 def _grade_q12(code: str) -> bool:
     tree = parse_tree(code)
-    if not has_for(tree) or not has_if(tree):
+    if not _creates(code, {"pedidos"}) or not has_for(tree) or not has_if(tree):
         return False
     return _print_matches(code, [
         ({"pedidos": [2, 5, 1, 4]}, "3"),
@@ -167,7 +203,7 @@ def _grade_q12(code: str) -> bool:
         ({"pedidos": []}, "0"),
         ({"pedidos": [3, 2, 0]}, "2"),
         ({"pedidos": [2]}, "1"),
-    ])
+    ], {"pedidos"})
 
 
 def _call_flag(code: str, name: str, cases: list) -> bool:
@@ -190,18 +226,22 @@ def _grade_q13(code: str) -> bool:
 
 def _grade_q14(code: str) -> bool:
     tree = parse_tree(code)
-    if not has_if_else(tree) or not has_and(tree):
+    names = {"pagamento", "estoque", "quantidade"}
+    if not _creates(code, names) or not has_if_else(tree) or not has_and(tree):
         return False
-    return _print_matches(code, Q9_CASES)
+    return _print_matches(code, Q9_CASES, names)
 
 
 def _grade_counter(code: str, name: str, target: str, lists: list, minimum):
     tree = parse_tree(code)
+    if not _creates(code, {"pedidos"}):
+        return None
     if not has_function(tree, name) or not has_for(tree) or not has_call(tree, name) or not has_if(tree):
         return None
+    prepared = _without_inputs(code, {"pedidos"})
     sample = None
     for orders in lists:
-        result = execute(code, {"pedidos": list(orders)})
+        result = execute(prepared, {"pedidos": list(orders)})
         if result.env.get(target) != minimum(orders):
             return None
         sample = result
@@ -225,7 +265,8 @@ def _grade_q15(code: str) -> bool:
 
 def _grade_q16(code: str) -> bool:
     tree = parse_tree(code)
-    if not has_if_else(tree) or not has_or(tree):
+    names = {"promocao", "estoque"}
+    if not _creates(code, names) or not has_if_else(tree) or not has_or(tree):
         return False
     return _print_matches(code, [
         ({"promocao": 1, "estoque": 5}, "Promocao"),
@@ -234,7 +275,7 @@ def _grade_q16(code: str) -> bool:
         ({"promocao": 0, "estoque": 0}, "Normal"),
         ({"promocao": 1, "estoque": 30}, "Promocao"),
         ({"promocao": 0, "estoque": 19}, "Normal"),
-    ])
+    ], names)
 
 
 def _grade_q17(code: str) -> bool:
@@ -243,7 +284,7 @@ def _grade_q17(code: str) -> bool:
 
 def _grade_q18(code: str) -> bool:
     tree = parse_tree(code)
-    if not has_for(tree):
+    if not _creates(code, {"pedidos"}) or not has_for(tree):
         return False
     return _print_matches(code, [
         ({"pedidos": [2, 5, 1, 4]}, "12"),
@@ -251,15 +292,16 @@ def _grade_q18(code: str) -> bool:
         ({"pedidos": []}, "0"),
         ({"pedidos": [8]}, "8"),
         ({"pedidos": [-1, 3]}, "2"),
-    ])
+    ], {"pedidos"})
 
 
 def _grade_q19(code: str) -> bool:
     tree = parse_tree(code)
-    if not has_while(tree):
+    if not _creates(code, {"meta", "quantidade"}) or not has_while(tree):
         return False
+    prepared = _without_inputs(code, {"meta"})
     for meta in (0, 1, 3, 5, 8):
-        result = execute(code, {"meta": meta})
+        result = execute(prepared, {"meta": meta})
         if result.env.get("quantidade") != meta:
             return False
     return True

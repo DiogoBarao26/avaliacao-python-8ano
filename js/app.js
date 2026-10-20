@@ -258,7 +258,7 @@
           <li>As questões 1 a 8 valem 0,20 cada. As questões 9 a 20 valem 0,45 cada.</li>
           <li>Você responde uma questão por vez e não pode voltar.</li>
           <li>Depois de confirmar, a resposta fica bloqueada.</li>
-          <li>Da questão 9 à 20, escreva ou corrija o código no editor. A correção verifica o comportamento do programa, não apenas o texto.</li>
+          <li>Da questão 9 à 20, você cria as variáveis e a lista no editor. Use Testar código para ver o resultado antes de confirmar.</li>
           <li>A prova pode ser feita em qualquer internet, pelo link desta página.</li>
           <li>Ctrl+C, Ctrl+V e o print da tela são bloqueados. Cada tentativa gera um alerta. Se isso passar de 3 vezes, a prova encerra e o professor vê o aviso na lista de notas.</li>
         </ul>

@@ -131,39 +131,39 @@ const PagesExam = (() => {
     9: {
       type: "code",
       topic: "Construção de código",
-      prompt: "As variáveis pagamento, estoque e quantidade já existem. pagamento vale 1 quando o pagamento foi confirmado e 0 quando não foi. Escreva um programa que exiba Aprovado quando o pagamento estiver confirmado e o estoque for suficiente (estoque maior ou igual à quantidade). Nos outros casos, exiba Recusado. Use if, else e o operador and. Escreva as palavras exatamente assim: Aprovado e Recusado. O programa será testado com vários valores. Não deixe a resposta fixa em uma única palavra.",
-      starter: "# pagamento, estoque e quantidade já existem.\n# Exiba exatamente Aprovado ou Recusado.\n",
+      prompt: "Crie as variáveis pagamento, estoque e quantidade. pagamento vale 1 quando o pagamento foi confirmado e 0 quando não foi. Mostre Aprovado se pagamento for 1 e estoque for maior ou igual à quantidade. Nos outros casos, mostre Recusado. Use if, else e and. Teste com um exemplo antes de confirmar.",
+      starter: "",
       explanationCorrect: "Sua solução aprova o pedido somente quando o pagamento está confirmado e o estoque cobre a quantidade pedida. O else trata os outros casos.",
       explanationWrong: "O pedido só pode ser aprovado quando o pagamento está confirmado e o estoque é maior ou igual à quantidade. Use if, else e and, e exiba exatamente Aprovado ou Recusado. Confira também os dois-pontos e a indentação."
     },
     10: {
       type: "code",
       topic: "Desafio integrador",
-      prompt: "A lista pedidos já existe e guarda a quantidade de cada pedido. No exemplo [3, 0, 5, 2], há 3 pedidos válidos. Complete o programa com três partes: a função pedido_valido deve retornar 1 quando a quantidade for maior que zero e 0 nos outros casos; o for deve percorrer a lista pedidos; a variável aprovados deve terminar com a quantidade de pedidos válidos. O programa será testado com outras listas. Não deixe aprovados fixo em um número.",
-      starter: "def pedido_valido(quantidade):\n    return 0\n\naprovados = 0\nfor quantidade in pedidos:\n    if pedido_valido(quantidade) == 1:\n        aprovados = aprovados + 1\n",
+      prompt: "Crie a lista pedidos. Exemplo: [3, 0, 5, 2]. Crie a função pedido_valido: ela recebe quantidade e retorna 1 se for maior que 0, senão retorna 0. Crie a variável aprovados e use for para contar os pedidos válidos. No exemplo, aprovados fica 3. Teste antes de confirmar.",
+      starter: "",
       explanationCorrect: "A função identifica quantidades maiores que zero, e o for usa essa função para contar os pedidos válidos da lista.",
       explanationWrong: "A função pedido_valido precisa retornar 1 somente quando a quantidade é maior que zero, e 0 nos outros casos. O for deve percorrer pedidos, chamar essa função e somar 1 em aprovados a cada pedido válido. Confira a indentação e os dois-pontos."
     },
     11: {
       type: "code",
       topic: "Correção de código",
-      prompt: "O programa abaixo deveria aprovar o pedido quando o estoque é suficiente, isto é, quando estoque é maior ou igual à quantidade. Há um erro na comparação. Corrija o código. Exiba exatamente Aprovado ou Recusado. O programa será testado com outros valores, inclusive quando estoque e quantidade são iguais.",
-      starter: "if estoque > quantidade:\n    print(\"Aprovado\")\nelse:\n    print(\"Recusado\")\n",
+      prompt: "O programa cria estoque e quantidade, mas só aprova quando o estoque é maior. Ele também deve aprovar quando os dois valores são iguais. Corrija a comparação. Mostre Aprovado ou Recusado. Teste antes de confirmar.",
+      starter: "estoque = 3\nquantidade = 3\nif estoque > quantidade:\n    print(\"Aprovado\")\nelse:\n    print(\"Recusado\")\n",
       explanationCorrect: "A comparação correta é estoque >= quantidade. Quando os dois valores são iguais, o estoque ainda cobre o pedido e o programa exibe Aprovado.",
       explanationWrong: "Troque a comparação para estoque >= quantidade. Com o sinal >, um estoque igual à quantidade fica Recusado, e isso não atende à regra."
     },
     12: {
       type: "code",
       topic: "Correção de código",
-      prompt: "A lista pedidos já existe. O programa deve contar quantos pedidos têm quantidade maior ou igual a 2 e exibir esse total. O código conta só as quantidades maiores que 2 e deixa o 2 de fora. Corrija a condição. No exemplo [2, 5, 1, 4], o resultado é 3.",
-      starter: "total = 0\nfor quantidade in pedidos:\n    if quantidade > 2:\n        total = total + 1\nprint(total)\n",
+      prompt: "O programa cria a lista pedidos e conta só os pedidos com mais de 2 unidades. Ele deveria contar também o pedido com 2. Corrija a condição. No exemplo, o programa deve mostrar 3. Teste antes de confirmar.",
+      starter: "pedidos = [2, 5, 1, 4]\ntotal = 0\nfor quantidade in pedidos:\n    if quantidade > 2:\n        total = total + 1\nprint(total)\n",
       explanationCorrect: "A condição quantidade >= 2 inclui o próprio 2. O for percorre a lista e o print mostra a contagem.",
       explanationWrong: "A condição precisa ser quantidade >= 2. Com quantidade > 2, um pedido de exatamente 2 unidades não entra na conta."
     },
     13: {
       type: "code",
       topic: "Correção de código",
-      prompt: "A função estoque_baixo deve retornar 1 quando a quantidade for menor que 5 e 0 nos outros casos. O código abaixo está com a comparação invertida. Corrija a função. Ela será testada com várias quantidades.",
+      prompt: "Corrija a função estoque_baixo. Ela recebe quantidade e deve retornar 1 quando a quantidade for menor que 5. Nos outros casos, retorne 0. Para testar, escreva print(estoque_baixo(4)) embaixo da função.",
       starter: "def estoque_baixo(quantidade):\n    if quantidade > 5:\n        return 1\n    else:\n        return 0\n",
       explanationCorrect: "A função retorna 1 somente quando a quantidade é menor que 5. O 5 e os valores maiores retornam 0.",
       explanationWrong: "Troque a comparação para quantidade < 5. Do jeito atual, quantidades pequenas retornam 0."
@@ -171,56 +171,56 @@ const PagesExam = (() => {
     14: {
       type: "code",
       topic: "Correção de código",
-      prompt: "O pedido só pode ser aprovado quando o pagamento vale 1 e o estoque é maior ou igual à quantidade. O código usa or e acaba aprovando casos indevidos. Troque pela condição correta, com and. Exiba exatamente Aprovado ou Recusado.",
-      starter: "if pagamento == 1 or estoque >= quantidade:\n    print(\"Aprovado\")\nelse:\n    print(\"Recusado\")\n",
+      prompt: "O programa cria pagamento, estoque e quantidade, mas usa or. As duas partes precisam ser verdadeiras: pagamento igual a 1 e estoque maior ou igual à quantidade. Troque or por and. Mostre Aprovado ou Recusado. Teste antes de confirmar.",
+      starter: "pagamento = 1\nestoque = 2\nquantidade = 5\nif pagamento == 1 or estoque >= quantidade:\n    print(\"Aprovado\")\nelse:\n    print(\"Recusado\")\n",
       explanationCorrect: "As duas partes precisam ser verdadeiras ao mesmo tempo: pagamento == 1 e estoque >= quantidade.",
       explanationWrong: "Com or, basta uma das partes para aprovar. Use and para exigir o pagamento confirmado e o estoque suficiente."
     },
     15: {
       type: "code",
       topic: "Correção de código",
-      prompt: "A lista pedidos já existe. A função pedido_valido está certa: retorna 1 quando a quantidade é maior que zero. O for, porém, conta os pedidos inválidos, porque compara com 0. Corrija o laço para contar os pedidos válidos. No exemplo [3, 0, 5, 2], aprovados deve terminar em 3.",
-      starter: "def pedido_valido(quantidade):\n    if quantidade > 0:\n        return 1\n    else:\n        return 0\n\naprovados = 0\nfor quantidade in pedidos:\n    if pedido_valido(quantidade) == 0:\n        aprovados = aprovados + 1\n",
+      prompt: "O programa cria a lista pedidos. A função pedido_valido está certa. O for conta os pedidos inválidos, porque compara com 0. Corrija para contar os válidos. No exemplo, aprovados fica 3. Teste antes de confirmar.",
+      starter: "pedidos = [3, 0, 5, 2]\ndef pedido_valido(quantidade):\n    if quantidade > 0:\n        return 1\n    else:\n        return 0\n\naprovados = 0\nfor quantidade in pedidos:\n    if pedido_valido(quantidade) == 0:\n        aprovados = aprovados + 1\n",
       explanationCorrect: "A comparação == 1 seleciona os pedidos válidos. O for soma 1 em aprovados a cada chamada que retorna 1.",
       explanationWrong: "pedido_valido(quantidade) == 0 conta justamente os pedidos que não valem. Troque por == 1."
     },
     16: {
       type: "code",
       topic: "Construção de código",
-      prompt: "As variáveis promocao e estoque já existem. promocao vale 1 quando o produto está em promoção. Exiba Promocao quando promocao for 1 ou o estoque for maior que 20. Nos outros casos, exiba Normal. Use if, else e o operador or. Escreva as palavras exatamente assim: Promocao e Normal. O programa será testado com vários valores.",
-      starter: "# promocao e estoque já existem.\n# Exiba exatamente Promocao ou Normal.\n",
+      prompt: "Crie as variáveis promocao e estoque. promocao vale 1 quando o produto está em promoção e 0 quando não está. Mostre Promocao se promocao for 1 ou o estoque for maior que 20. Nos outros casos, mostre Normal. Use if, else e or. Teste antes de confirmar.",
+      starter: "",
       explanationCorrect: "A condição com or aceita promoção ou estoque acima de 20. O else exibe Normal nos demais casos.",
       explanationWrong: "Use if, else e or. A mensagem Promocao aparece se promocao == 1 ou estoque > 20. Estoque igual a 20, sem promoção, deve exibir Normal."
     },
     17: {
       type: "code",
       topic: "Construção de código",
-      prompt: "Escreva a função preco_alto. Ela recebe valor e deve retornar 1 quando o valor for maior que 50 e 0 nos outros casos. Use if e else. A função será testada com vários números. Não deixe o retorno fixo em 0.",
-      starter: "def preco_alto(valor):\n    return 0\n",
+      prompt: "Crie a função preco_alto. Ela recebe valor. Retorne 1 se o valor for maior que 50. Senão, retorne 0. Para testar, escreva print(preco_alto(60)) embaixo da função.",
+      starter: "",
       explanationCorrect: "A função retorna 1 apenas quando valor > 50. O valor 50 e os menores retornam 0.",
       explanationWrong: "Complete o if valor > 50 para retornar 1, e o else para retornar 0. Um return 0 fixo não distingue os preços."
     },
     18: {
       type: "code",
       topic: "Construção de código",
-      prompt: "A lista pedidos já existe e guarda quantidades. Some todas elas na variável soma e exiba soma. Use for. No exemplo [2, 5, 1, 4], o programa exibe 12. A lista pode estar vazia: nesse caso, a soma é 0. Não deixe a resposta fixa em um número.",
-      starter: "soma = 0\n",
+      prompt: "Crie a lista pedidos. Exemplo: [2, 5, 1, 4]. Crie a variável soma e use for para somar todas as quantidades. Mostre a soma. No exemplo, o programa mostra 12. Teste antes de confirmar.",
+      starter: "",
       explanationCorrect: "O for percorre pedidos e acumula cada quantidade em soma. O print mostra o total.",
       explanationWrong: "Comece soma em 0, percorra pedidos com for e some cada quantidade. Depois exiba soma. Uma lista vazia precisa continuar valendo 0."
     },
     19: {
       type: "code",
       topic: "Construção de código",
-      prompt: "A variável meta já existe. quantidade deve começar em 0 e aumentar de 1 em 1 enquanto for menor que meta. Use while. Quando o laço terminar, quantidade deve ser igual a meta. Se meta for 0, o laço não deve repetir.",
-      starter: "quantidade = 0\n",
+      prompt: "Crie a variável meta. Exemplo: meta = 3. Crie quantidade com valor 0. Enquanto quantidade for menor que meta, some 1. Use while. No final, quantidade fica igual a meta. Teste antes de confirmar.",
+      starter: "",
       explanationCorrect: "O while quantidade < meta soma 1 a cada volta e para quando quantidade alcança meta.",
       explanationWrong: "Escreva while quantidade < meta e, dentro dele, quantidade = quantidade + 1. A condição <= faria o laço passar de meta ou não terminar."
     },
     20: {
       type: "code",
       topic: "Desafio integrador",
-      prompt: "A lista pedidos já existe. Complete o programa: a função pedido_grande deve retornar 1 quando a quantidade for maior ou igual a 2 e 0 nos outros casos; o for deve percorrer pedidos; a variável grandes deve terminar com a quantidade de pedidos grandes. No exemplo [2, 5, 1, 4], grandes fica 3. O programa será testado com outras listas.",
-      starter: "def pedido_grande(quantidade):\n    return 0\n\ngrandes = 0\nfor quantidade in pedidos:\n    if pedido_grande(quantidade) == 1:\n        grandes = grandes + 1\n",
+      prompt: "Crie a lista pedidos. Exemplo: [2, 5, 1, 4]. Crie a função pedido_grande: ela recebe quantidade e retorna 1 se for maior ou igual a 2, senão retorna 0. Crie a variável grandes e use for para contar os pedidos grandes. No exemplo, grandes fica 3. Teste antes de confirmar.",
+      starter: "",
       explanationCorrect: "A função reconhece quantidades a partir de 2, e o for usa esse retorno para contar grandes.",
       explanationWrong: "pedido_grande precisa retornar 1 quando quantidade >= 2, e 0 nos outros casos. O for deve chamar a função e somar 1 em grandes apenas quando o retorno for 1."
     }
@@ -457,8 +457,12 @@ const PagesExam = (() => {
     throw new Error("valor");
   }
 
-  function execute(code, env) {
-    const tree = parse(tokenize(code));
+  function execute(code, env, stripNames) {
+    let tree = parse(tokenize(code));
+    if (stripNames && stripNames.length) {
+      const skip = new Set(stripNames);
+      tree = tree.filter((stmt) => !(stmt.type === "assign" && skip.has(stmt.name)));
+    }
     const state = { env: Object.assign({}, env), local: null, functions: {}, output: [], steps: 0, depth: 0 };
     const returned = { signal: "return" };
     function step() {
@@ -616,8 +620,16 @@ const PagesExam = (() => {
     return JSON.stringify(parse(tokenize(code)));
   }
 
-  function shows(code, cases) {
-    return cases.every(([env, expected]) => printed(execute(code, env).output).join("|") === String(expected));
+  function creates(tree, names) {
+    const found = new Set();
+    tree.forEach((stmt) => {
+      if (stmt.type === "assign") found.add(stmt.name);
+    });
+    return names.every((name) => found.has(name));
+  }
+
+  function shows(code, cases, strip) {
+    return cases.every(([env, expected]) => printed(execute(code, env, strip).output).join("|") === String(expected));
   }
 
   function flagMatches(value, expected) {
@@ -646,9 +658,11 @@ const PagesExam = (() => {
     if (number === 9) {
       const hasElse = tree.some((stmt) => stmt.type === "if" && stmt.orelse.length) || JSON.stringify(tree).includes('"orelse":[{');
       const text = JSON.stringify(tree);
+      if (!creates(tree, ["pagamento", "estoque", "quantidade"])) return false;
       if (!text.includes('"op":"and"') && !text.includes('"op":"or"')) return false;
       if (!hasElse && !text.includes('"type":"if"')) return false;
       if (!text.includes('"type":"if"') || !text.includes('"orelse":[{')) return false;
+      const strip = ["pagamento", "estoque", "quantidade"];
       const cases = [
         [{ pagamento: 1, estoque: 10, quantidade: 4 }, "Aprovado"],
         [{ pagamento: 1, estoque: 2, quantidade: 5 }, "Recusado"],
@@ -658,29 +672,30 @@ const PagesExam = (() => {
         [{ pagamento: 1, estoque: 0, quantidade: 0 }, "Aprovado"],
         [{ pagamento: 1, estoque: 1, quantidade: 2 }, "Recusado"]
       ];
-      return cases.every(([env, expected]) => printed(execute(code, env).output).join("|") === expected);
+      return cases.every(([env, expected]) => printed(execute(code, env, strip).output).join("|") === expected);
     }
     if (number === 10 || number === 15) {
+      if (!creates(tree, ["pedidos"])) return false;
       if (!text.includes('"type":"def"') || !text.includes("pedido_valido") || !hasFor || !text.includes('"name":"pedido_valido"') || !hasIf) return false;
       const lists = [[3, 0, 5, 2], [0, 0, 0], [1], [4, 2], [], [-1, 0, 7], [8]];
       for (const orders of lists) {
-        const result = execute(code, { pedidos: orders.slice() });
+        const result = execute(code, { pedidos: orders.slice() }, ["pedidos"]);
         if (result.env.aprovados !== orders.filter((item) => item > 0).length) return false;
       }
       return callFlag(code, "pedido_valido", [[3, 1], [1, 1], [0, 0], [-3, 0], [12, 1]]);
     }
     if (number === 11) {
-      if (!hasElse) return false;
+      if (!creates(tree, ["estoque", "quantidade"]) || !hasElse) return false;
       return shows(code, [
         [{ estoque: 10, quantidade: 4 }, "Aprovado"],
         [{ estoque: 3, quantidade: 3 }, "Aprovado"],
         [{ estoque: 2, quantidade: 5 }, "Recusado"],
         [{ estoque: 0, quantidade: 0 }, "Aprovado"],
         [{ estoque: 1, quantidade: 2 }, "Recusado"]
-      ]);
+      ], ["estoque", "quantidade"]);
     }
     if (number === 12) {
-      if (!hasFor || !hasIf) return false;
+      if (!creates(tree, ["pedidos"]) || !hasFor || !hasIf) return false;
       return shows(code, [
         [{ pedidos: [2, 5, 1, 4] }, "3"],
         [{ pedidos: [2, 2] }, "2"],
@@ -688,11 +703,11 @@ const PagesExam = (() => {
         [{ pedidos: [] }, "0"],
         [{ pedidos: [3, 2, 0] }, "2"],
         [{ pedidos: [2] }, "1"]
-      ]);
+      ], ["pedidos"]);
     }
     if (number === 13) return callFlag(code, "estoque_baixo", [[4, 1], [5, 0], [0, 1], [9, 0], [-1, 1], [6, 0]]);
     if (number === 14) {
-      if (!hasElse || !hasAnd) return false;
+      if (!creates(tree, ["pagamento", "estoque", "quantidade"]) || !hasElse || !hasAnd) return false;
       return shows(code, [
         [{ pagamento: 1, estoque: 10, quantidade: 4 }, "Aprovado"],
         [{ pagamento: 1, estoque: 2, quantidade: 5 }, "Recusado"],
@@ -701,10 +716,10 @@ const PagesExam = (() => {
         [{ pagamento: 0, estoque: 8, quantidade: 8 }, "Recusado"],
         [{ pagamento: 1, estoque: 0, quantidade: 0 }, "Aprovado"],
         [{ pagamento: 1, estoque: 1, quantidade: 2 }, "Recusado"]
-      ]);
+      ], ["pagamento", "estoque", "quantidade"]);
     }
     if (number === 16) {
-      if (!hasElse || !hasOr) return false;
+      if (!creates(tree, ["promocao", "estoque"]) || !hasElse || !hasOr) return false;
       return shows(code, [
         [{ promocao: 1, estoque: 5 }, "Promocao"],
         [{ promocao: 0, estoque: 21 }, "Promocao"],
@@ -712,28 +727,28 @@ const PagesExam = (() => {
         [{ promocao: 0, estoque: 0 }, "Normal"],
         [{ promocao: 1, estoque: 30 }, "Promocao"],
         [{ promocao: 0, estoque: 19 }, "Normal"]
-      ]);
+      ], ["promocao", "estoque"]);
     }
     if (number === 17) return callFlag(code, "preco_alto", [[50, 0], [51, 1], [0, 0], [100, 1], [49, 0]]);
     if (number === 18) {
-      if (!hasFor) return false;
+      if (!creates(tree, ["pedidos"]) || !hasFor) return false;
       return shows(code, [
         [{ pedidos: [2, 5, 1, 4] }, "12"],
         [{ pedidos: [0, 0] }, "0"],
         [{ pedidos: [] }, "0"],
         [{ pedidos: [8] }, "8"],
         [{ pedidos: [-1, 3] }, "2"]
-      ]);
+      ], ["pedidos"]);
     }
     if (number === 19) {
-      if (!hasWhile) return false;
-      return [0, 1, 3, 5, 8].every((meta) => execute(code, { meta }).env.quantidade === meta);
+      if (!creates(tree, ["meta", "quantidade"]) || !hasWhile) return false;
+      return [0, 1, 3, 5, 8].every((meta) => execute(code, { meta }, ["meta"]).env.quantidade === meta);
     }
     if (number === 20) {
-      if (!text.includes("pedido_grande") || !hasFor || !hasIf) return false;
+      if (!creates(tree, ["pedidos"]) || !text.includes("pedido_grande") || !hasFor || !hasIf) return false;
       const lists = [[2, 5, 1, 4], [1, 0], [2], [], [2, 2, 2], [1, 2, 3]];
       for (const orders of lists) {
-        const result = execute(code, { pedidos: orders.slice() });
+        const result = execute(code, { pedidos: orders.slice() }, ["pedidos"]);
         const expected = orders.filter((item) => item >= 2).length;
         if (result.env.grandes !== expected) return false;
       }
@@ -1007,5 +1022,39 @@ const PagesExam = (() => {
     fail("Não foi possível concluir a operação.", 404);
   }
 
-  return { handle, grade, execute, matches };
+  function formatValue(value) {
+    if (Array.isArray(value)) return "[" + value.map(formatValue).join(", ") + "]";
+    if (typeof value === "string") return '"' + value + '"';
+    return String(value);
+  }
+
+  function previewError(error) {
+    const message = String(error && error.message || "");
+    if (message === "nome") return "Uma variável foi usada antes de ser criada.";
+    if (message === "sintaxe" || message === "indent" || message === "bloco") return "Há um erro de escrita. Confira os dois-pontos e o espaço no começo da linha.";
+    if (message === "limite" || message === "recursao") return "O programa repetiu demais. Confira o while ou o for.";
+    if (message === "funcao") return "A função chamada ainda não foi criada.";
+    if (message === "print") return "O print precisa de um valor entre parênteses.";
+    if (message === "codigo") return "O programa está longo demais.";
+    return "O programa parou por um erro. Leia o enunciado e teste de novo.";
+  }
+
+  function preview(code) {
+    if (!String(code || "").trim()) return { ok: false, text: "Escreva o programa antes de testar." };
+    try {
+      const state = execute(code, {});
+      const lines = printed(state.output);
+      const vars = Object.keys(state.env)
+        .filter((name) => typeof state.env[name] !== "function")
+        .map((name) => name + " = " + formatValue(state.env[name]));
+      const parts = [];
+      parts.push(lines.length ? "O programa mostrou:\n" + lines.join("\n") : "O programa rodou e não mostrou nada na tela.");
+      if (vars.length) parts.push("Variáveis no final:\n" + vars.join("\n"));
+      return { ok: true, text: parts.join("\n\n") };
+    } catch (error) {
+      return { ok: false, text: previewError(error) };
+    }
+  }
+
+  return { handle, grade, execute, matches, preview };
 })();

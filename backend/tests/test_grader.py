@@ -12,6 +12,9 @@ from questions_bank import Q2_CODE, Q4_CODE, Q5_CODE, Q6_CODE, Q8_CODE, QUESTION
 from safe_python import SafeError, execute
 
 Q9_SOLUTION = """
+pagamento = 1
+estoque = 10
+quantidade = 4
 if pagamento and estoque >= quantidade:
     print("Aprovado")
 else:
@@ -19,6 +22,9 @@ else:
 """
 
 Q9_VARIANT = """
+pagamento = 1
+estoque = 10
+quantidade = 4
 if quantidade <= estoque and pagamento == 1:
     print("Aprovado")
 else:
@@ -26,6 +32,7 @@ else:
 """
 
 Q10_SOLUTION = """
+pedidos = [3, 0, 5, 2]
 def pedido_valido(quantidade):
     if quantidade > 0:
         return 1
@@ -39,8 +46,12 @@ for quantidade in pedidos:
 """
 
 Q10_VARIANT = """
+pedidos = [3, 0, 5, 2]
 def pedido_valido(quantidade):
-    return quantidade > 0
+    if quantidade > 0:
+        return quantidade > 0
+    else:
+        return 0
 
 aprovados = 0
 for item in pedidos:
@@ -144,6 +155,8 @@ else:
 
 
 Q11 = """
+estoque = 3
+quantidade = 3
 if estoque >= quantidade:
     print("Aprovado")
 else:
@@ -151,6 +164,7 @@ else:
 """
 
 Q12 = """
+pedidos = [2, 5, 1, 4]
 total = 0
 for quantidade in pedidos:
     if quantidade >= 2:
@@ -167,6 +181,9 @@ def estoque_baixo(quantidade):
 """
 
 Q14 = """
+pagamento = 1
+estoque = 10
+quantidade = 4
 if pagamento == 1 and estoque >= quantidade:
     print("Aprovado")
 else:
@@ -174,6 +191,7 @@ else:
 """
 
 Q15 = """
+pedidos = [3, 0, 5, 2]
 def pedido_valido(quantidade):
     if quantidade > 0:
         return 1
@@ -187,6 +205,8 @@ for quantidade in pedidos:
 """
 
 Q16 = """
+promocao = 1
+estoque = 5
 if promocao == 1 or estoque > 20:
     print("Promocao")
 else:
@@ -202,6 +222,7 @@ def preco_alto(valor):
 """
 
 Q18 = """
+pedidos = [2, 5, 1, 4]
 soma = 0
 for quantidade in pedidos:
     soma = soma + quantidade
@@ -209,12 +230,14 @@ print(soma)
 """
 
 Q19 = """
+meta = 3
 quantidade = 0
 while quantidade < meta:
     quantidade = quantidade + 1
 """
 
 Q20 = """
+pedidos = [2, 5, 1, 4]
 def pedido_grande(quantidade):
     if quantidade >= 2:
         return 1
@@ -235,7 +258,12 @@ def test_extra_code_questions_grade_behavior():
     }
     for number, code in solutions.items():
         assert grade(number, {"code": code})["correct"] is True
-        assert grade(number, {"code": QUESTIONS[number]["starter"]})["correct"] is False
+        starter = QUESTIONS[number]["starter"]
+        if starter.strip():
+            assert grade(number, {"code": starter})["correct"] is False
+        else:
+            with pytest.raises(ValueError):
+                grade(number, {"code": starter})
         assert QUESTIONS[number]["type"] == "code"
 
 

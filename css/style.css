@@ -342,6 +342,19 @@ textarea:focus,
 .banner.bad { background: var(--bad-bg); color: #7d1d27; }
 .banner.info { background: var(--warn-bg); color: #6d5314; }
 
+.code-tools { margin-top: 12px; }
+
+.run-log {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  white-space: pre-wrap;
+  font-family: inherit;
+}
+
+.run-log.ok { background: var(--ok-bg); color: #0c5b34; }
+.run-log.bad { background: var(--bad-bg); color: #7d1d27; }
+
 .editor {
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr);

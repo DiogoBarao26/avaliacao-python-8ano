@@ -9,24 +9,7 @@ from openpyxl import load_workbook
 from app import run_sync
 from excel_sync import HEADERS
 from questions_bank import TOTAL_QUESTIONS
-from test_grader import Q11, Q12, Q13, Q14, Q15, Q16, Q17, Q18, Q19, Q20
-
-Q9 = """
-if pagamento and estoque >= quantidade:
-    print("Aprovado")
-else:
-    print("Recusado")
-"""
-
-Q10 = """
-def pedido_valido(quantidade):
-    return quantidade > 0
-
-aprovados = 0
-for quantidade in pedidos:
-    if pedido_valido(quantidade):
-        aprovados = aprovados + 1
-"""
+from test_grader import Q9_SOLUTION as Q9, Q10_SOLUTION as Q10, Q11, Q12, Q13, Q14, Q15, Q16, Q17, Q18, Q19, Q20
 
 CORRECT = {
     1: {"answers": {"1": True, "2": True, "3": False, "4": False}},
