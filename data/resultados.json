@@ -12,5 +12,19 @@
     "finished_at": "19/10/2026 21:48",
     "status": "Concluída",
     "encerramento": "Concluída pelo aluno"
+  },
+  {
+    "attempt_id": "0e1ea8fe-f1c4-4fd7-a71c-30822c74368e",
+    "nome": "Tomaz Ma",
+    "turma": "8B",
+    "nota": 1.2,
+    "nota_formatada": "1,20",
+    "acertos": 6,
+    "erros": 14,
+    "aproveitamento": 17,
+    "started_at": "20/10/2026 06:27",
+    "finished_at": "20/10/2026 06:28",
+    "status": "Concluída",
+    "encerramento": "Concluída pelo aluno"
   }
 ]
