@@ -163,6 +163,7 @@ def test_answers_cannot_be_changed_or_skipped(client):
     first = client.post("/api/answer", headers=headers, json={"question": 1, "response": CORRECT[1]})
     assert first.status_code == 200
     assert first.get_json()["correct"] is True
+    assert first.get_json()["points_formatada"] == "0,20"
     repeated = client.post("/api/answer", headers=headers, json={"question": 1, "response": WRONG[1]})
     assert repeated.status_code == 409
     skipped = client.post("/api/answer", headers=headers, json={"question": 2, "response": CORRECT[2]})
@@ -171,6 +172,7 @@ def test_answers_cannot_be_changed_or_skipped(client):
     assert state.get_json()["progress"]["acertos"] == 1
     assert state.get_json()["progress"]["pontuacao"] == 0.2
     assert state.get_json()["progress"]["pontuacao_formatada"] == "0,20"
+    assert state.get_json()["feedback"]["points_formatada"] == "0,20"
     assert "token_hash" not in json.dumps(state.get_json())
 
 

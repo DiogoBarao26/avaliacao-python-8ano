@@ -988,7 +988,15 @@ const PagesExam = (() => {
       record.erros += graded.correct ? 0 : 1;
       record.phase = "feedback";
       writeRecord(record);
-      return { correct: graded.correct, points: graded.points, explanation: graded.explanation, detail: graded.detail, locked: true, progress: progressOf(record) };
+      return {
+        correct: graded.correct,
+        points: graded.points,
+        points_formatada: graded.points_formatada,
+        explanation: graded.explanation,
+        detail: graded.detail,
+        locked: true,
+        progress: progressOf(record)
+      };
     }
     if (path === "/api/next") {
       if (record.phase !== "feedback") fail("Confirme a resposta antes de continuar.", 409);

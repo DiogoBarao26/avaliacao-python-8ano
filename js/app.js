@@ -295,7 +295,7 @@
     ExamUI.renderQuestion(host, { question: state.question, feedback: state.feedback }, refreshConfirm);
     if (state.feedback) {
       const kind = state.feedback.correct ? "ok" : "bad";
-      const earned = state.feedback.points_formatada || "0,00";
+      const earned = earnedText(state.feedback);
       const title = state.feedback.correct ? `Resposta correta. Você recebeu ${earned}.` : "Resposta incorreta. Esta questão ficou com 0,00.";
       document.querySelector("#feedback-host").innerHTML = `${banner(kind, title)}${banner("info", state.feedback.explanation)}`;
       document.querySelector("#next-btn").addEventListener("click", goNext);
@@ -304,6 +304,14 @@
       button.disabled = !ExamUI.collect(host, state.question);
       button.addEventListener("click", confirmAnswer);
     }
+  }
+
+  function earnedText(feedback) {
+    if (feedback && feedback.points_formatada) return feedback.points_formatada;
+    if (!feedback || !feedback.correct) return "0,00";
+    const cents = Math.round(Number(feedback.points) * 100);
+    if (!Number.isFinite(cents)) return state.question && state.question.valor ? state.question.valor : "0,00";
+    return `${Math.floor(cents / 100)},${String(Math.abs(cents) % 100).padStart(2, "0")}`;
   }
 
   function refreshConfirm() {
