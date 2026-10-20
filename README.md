@@ -9,9 +9,9 @@ Link para os alunos: https://diogobarao26.github.io/avaliacao-python-8ano/
 Login do professor: `diogo`  
 Senha: `diogo123`
 
-Nesse link a prova abre direto no navegador. Ao concluir, a nota entra na lista que o professor consulta na área administrativa. A planilha Excel e o e-mail só são gravados quando a prova roda no computador da escola, pelo `iniciar.bat`.
+Nesse link a prova abre em qualquer internet, no celular ou no computador. O professor consulta as notas pelo mesmo tipo de link, também de qualquer rede. Uma prova recém-concluída pode levar alguns minutos para aparecer. A planilha Excel e o e-mail só são gravados quando a prova roda no computador da escola, pelo `iniciar.bat`.
 
-O repositório é público. O gabarito e também este login podem ser lidos por quem abrir o código. A lista de notas do link do GitHub usa o mesmo endereço público: ela serve para a aula, e não impede que alguém consulte ou altere os registros se souber onde eles ficam. Essa lista gratuita deixa de responder depois de cerca de um dia; as notas dela não voltam, e a área do professor precisa de uma lista nova.
+O repositório é público. O gabarito e também este login podem ser lidos por quem abrir o código. As notas ficam numa lista pública do próprio repositório: servem para a aula, e alguém que saiba o endereço pode consultar esses registros.
 
 ## O que a prova faz
 

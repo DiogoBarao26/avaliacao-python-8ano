@@ -140,7 +140,7 @@
     const source = uniqueResults(state.results);
     const rows = source.filter((item) => !state.turma || item.turma === state.turma);
     const pagesNote = state.pages
-      ? "Estas são as provas concluídas pelo link do GitHub. A planilha e o e-mail continuam no computador da escola, quando a prova é iniciada por lá."
+      ? "Alunos e professor usam este link em qualquer internet. Uma prova recém-concluída pode levar alguns minutos para aparecer. A planilha Excel continua no computador da escola."
       : (state.emailConfigured
         ? "O envio de e-mail está configurado."
         : "O e-mail ainda não está configurado. As notas continuam salvas no sistema e nas planilhas.");
@@ -188,7 +188,7 @@
             </button>`).join("")}
         </div>
         <div class="actions">
-          ${state.pages ? `<button class="btn btn-primary" id="csv-btn" type="button">Baixar resultados.csv</button>` : `<button class="btn btn-primary" id="sync-btn" type="button">Sincronizar planilhas e e-mails</button>`}
+          ${state.pages ? `<button class="btn btn-primary" id="csv-btn" type="button">Baixar resultados.csv</button><button class="btn btn-secondary" id="refresh-btn" type="button">Atualizar notas</button>` : `<button class="btn btn-primary" id="sync-btn" type="button">Sincronizar planilhas e e-mails</button>`}
           <button class="btn btn-secondary" id="logout-btn" type="button">Sair</button>
         </div>
         ${state.pages ? "" : `<div class="actions">
@@ -211,6 +211,18 @@
     });
     const csv = document.querySelector("#csv-btn");
     if (csv) csv.addEventListener("click", () => downloadCsv(rows));
+    const refresh = document.querySelector("#refresh-btn");
+    if (refresh) {
+      refresh.addEventListener("click", async () => {
+        refresh.disabled = true;
+        try {
+          await loadPagesResults();
+        } catch (error) {
+          state.error = readableError(error);
+          renderResults();
+        }
+      });
+    }
     const sync = document.querySelector("#sync-btn");
     if (sync) {
       sync.addEventListener("click", async () => {
@@ -232,13 +244,27 @@
     });
   }
 
+  function decodeArchive(content) {
+    const bytes = Uint8Array.from(atob(String(content).replace(/\s/g, "")), (char) => char.charCodeAt(0));
+    const rows = JSON.parse(new TextDecoder().decode(bytes));
+    return Array.isArray(rows) ? rows : [];
+  }
+
   async function loadPagesResults() {
-    const url = window.JBS_CONFIG && window.JBS_CONFIG.resultsUrl;
+    const url = window.JBS_CONFIG && window.JBS_CONFIG.archiveUrl;
     if (!url) throw new Error("A lista de resultados não está configurada.");
-    const response = await fetch(url, { headers: { Accept: "application/json" } });
+    const response = await fetch(url + "?t=" + Date.now(), {
+      headers: { Accept: "application/vnd.github+json" }
+    });
+    if (response.status === 404) {
+      state.results = [];
+      state.error = "";
+      renderResults();
+      return;
+    }
     if (!response.ok) throw new Error("A lista de notas não respondeu. Atualize a página com Ctrl+F5 e entre de novo.");
     const data = await response.json();
-    state.results = Array.isArray(data) ? data : [];
+    state.results = data && data.content ? decodeArchive(data.content) : [];
     state.error = "";
     renderResults();
   }

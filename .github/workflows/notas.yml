@@ -1,0 +1,27 @@
+name: Notas
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python .github/scripts/sync_notas.py
+      - name: Publicar notas novas
+        run: |
+          git add data/resultados.json data/inboxes.json js/config.js
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git -c user.name="DiogoBarao26" -c user.email="282558497+DiogoBarao26@users.noreply.github.com" commit -m "Atualiza as notas recebidas de qualquer rede."
+          git push

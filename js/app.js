@@ -259,7 +259,8 @@
           <li>Você responde uma questão por vez e não pode voltar.</li>
           <li>Depois de confirmar, a resposta fica bloqueada.</li>
           <li>Da questão 9 à 20, escreva ou corrija o código no editor. A correção verifica o comportamento do programa, não apenas o texto.</li>
-          <li>Ctrl+C, Ctrl+V e o print da tela são bloqueados. Cada tentativa gera um alerta. Se isso passar de 3 vezes, a prova encerra e o professor vê o aviso na planilha.</li>
+          <li>A prova pode ser feita em qualquer internet, pelo link desta página.</li>
+          <li>Ctrl+C, Ctrl+V e o print da tela são bloqueados. Cada tentativa gera um alerta. Se isso passar de 3 vezes, a prova encerra e o professor vê o aviso na lista de notas.</li>
         </ul>
         <p><strong>Início registrado:</strong> ${escapeHtml(state.student.started_at)}</p>
         <p><strong>Aluno:</strong> ${escapeHtml(state.student.nome)} · Turma ${escapeHtml(state.student.turma)}</p>
